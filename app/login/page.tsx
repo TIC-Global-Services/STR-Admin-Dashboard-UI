@@ -2,15 +2,16 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
+import { Eye, EyeOff, Mail, Lock } from 'lucide-react';
 import { authApi } from '@/lib/api/auth';
-import { useAuthStore } from '@/lib/store/auth.store';
 
 export default function LoginPage() {
   const router = useRouter();
-  const setTokens = useAuthStore((state) => state.setTokens);
-  
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -20,8 +21,8 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      const { accessToken, refreshToken } = await authApi.login({ email, password });
-      setTokens(accessToken, refreshToken);
+      // Login (backend sets HTTP-only cookies)
+      await authApi.login({ email, password });
       router.push('/dashboard');
     } catch (err: any) {
       setError(err.response?.data?.message || 'Invalid credentials');
@@ -31,62 +32,107 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="max-w-md w-full space-y-8 p-8 bg-white rounded-lg shadow-md">
-        <div>
-          <h2 className="text-center text-3xl font-bold text-gray-900">
-            STR Admin
-          </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
-            Sign in to your account
-          </p>
+    <div className="min-h-screen flex">
+      {/* Left Panel */}
+      <div className="hidden lg:flex lg:w-1/2 bg-linear-to-br from-green-950 via-[#1e293b] to-[#0f172a] relative overflow-hidden items-center justify-center">
+        <div className="relative z-10 text-center px-12 w-full">
+          <Image
+            src="/logo.png"
+            alt="STR Logo"
+            width={600}
+            height={600}
+            className="mx-auto mb-8 drop-shadow-2xl w-full -rotate-6"
+            priority
+          />
         </div>
-        
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+      </div>
+
+      {/* Right Panel */}
+      <div className="w-full lg:w-1/2 flex items-center justify-center bg-gray-50 px-6 py-12">
+        <div className="w-full max-w-md">
+          <div className="lg:hidden flex justify-center mb-8">
+            <Image
+              src="/logo.png"
+              alt="STR Logo"
+              width={80}
+              height={80}
+              className="invert w-1/2"
+              priority
+            />
+          </div>
+
+          <div className="mb-8">
+            <h2 className="text-3xl font-bold font-velcan text-gray-900 tracking-tight">
+              Welcome back
+            </h2>
+            <p className="mt-2 text-gray-500">
+              Sign in to Control Panel
+            </p>
+          </div>
+
           {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+            <div className="mb-6 flex items-center gap-3 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-sm">
+              <div className="w-2 h-2 bg-red-500 rounded-full shrink-0" />
               {error}
             </div>
           )}
-          
-          <div className="space-y-4">
+
+          <form onSubmit={handleSubmit} className="space-y-5">
+            {/* Email */}
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                Email
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                Email address
               </label>
-              <input
-                id="email"
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-              />
+              <div className="relative">
+                <input
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="you@example.com"
+                  className="block w-full pl-4 pr-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500/20 focus:border-green-500"
+                />
+              </div>
             </div>
-            
+
+            {/* Password */}
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">
                 Password
               </label>
-              <input
-                id="password"
-                type="password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-              />
+              <div className="relative">
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Enter your password"
+                  className="block w-full pl-4 pr-12 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500/20 focus:border-green-500"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute inset-y-0 right-3.5 flex items-center text-gray-400"
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-5 w-5" />
+                  ) : (
+                    <Eye className="h-5 w-5" />
+                  )}
+                </button>
+              </div>
             </div>
-          </div>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {loading ? 'Signing in...' : 'Sign in'}
-          </button>
-        </form>
+            {/* Submit */}
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full py-3 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-xl"
+            >
+              {loading ? 'Signing in...' : 'Sign in'}
+            </button>
+          </form>
+        </div>
       </div>
     </div>
   );

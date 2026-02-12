@@ -108,13 +108,13 @@ export const membershipApi = {
 
   // Admin - Approve membership
   approve: async (id: string): Promise<Membership> => {
-    const { data } = await apiClient.put(`/admin/memberships/${id}/approve`);
+    const { data } = await apiClient.post(`/admin/memberships/${id}/approve`);
     return data;
   },
 
   // Admin - Reject membership
   reject: async (id: string, reason: string): Promise<Membership> => {
-    const { data } = await apiClient.put(`/admin/memberships/${id}/reject`, { reason });
+    const { data } = await apiClient.post(`/admin/memberships/${id}/reject`, { reason });
     return data;
   },
 };

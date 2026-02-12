@@ -1,22 +1,32 @@
-'use client';
+import { Sidebar } from "@/components/layout/sidebar";
+import { cookies } from "next/headers";
 
-import { Sidebar } from '@/components/layout/sidebar';
-import { Header } from '@/components/layout/header';
+function decodeToken(token: string) {
+  try {
+    const payload = token.split(".")[1];
+    const decoded = JSON.parse(
+      Buffer.from(payload, "base64").toString("utf-8")
+    );
+    return decoded;
+  } catch {
+    return null;
+  }
+}
 
-export default function DashboardLayout({
+export default async function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const cookieStore = await cookies();
+  const token = cookieStore.get("accessToken")?.value;
+
+  const user = token ? decodeToken(token) : null;
+
   return (
-    <div className="flex h-screen bg-gray-100">
-      <Sidebar />
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <Header />
-        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50">
-          {children}
-        </main>
-      </div>
+    <div className="flex">
+      <Sidebar user={user} />
+      <main className="flex-1 w-[80%] ml-[20%]">{children}</main>
     </div>
   );
 }

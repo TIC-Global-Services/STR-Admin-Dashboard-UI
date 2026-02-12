@@ -1,71 +1,115 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import Image from 'next/image';
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
+import {
+  LayoutDashboard,
+  Users,
+  Newspaper,
+  Share2,
+  BarChart3,
+  Settings,
+  FileText,
+  LogOut,
+} from "lucide-react";
+import Image from "next/image";
+
+interface UserPayload {
+  roles: string[];
+  permissions: string[];
+}
+
+interface SidebarProps {
+  user: UserPayload | null;
+}
 
 const navigation = [
-  { name: 'Dashboard', href: '/dashboard', icon: '/dashboard.png' },
-  { name: 'User management', href: '/dashboard/users', icon: '/user.png' },
-  { name: 'News and Events', href: '/dashboard/news', icon: '/newsandevents.png' },
-  { name: 'Social settings', href: '/dashboard/social', icon: '/socialsettings.png' },
-  { name: 'Analytics', href: '/dashboard/analytics', icon: '/analytics.png' },
-  { name: 'System settings', href: '/dashboard/settings', icon: '/systemsettings.png' },
-  { name: 'Audit logs', href: '/dashboard/audit', icon: '/auditlogs.png' },
-  { name: 'Delete Account', href: '/dashboard/delete-account', icon: '/deleteacc.png' },
+  { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard, permission: null },
+  { name: "Memberships", href: "/dashboard/membership", icon: Users, permission: "MEMBERSHIP_APPROVE" },
+  { name: "News and Events", href: "/dashboard/news", icon: Newspaper, permission: "NEWS_CREATE" },
+  { name: "Social Settings", href: "/dashboard/social", icon: Share2, permission: "SOCIAL_EMBED_UPDATE" },
+  { name: "Analytics", href: "/dashboard/analytics", icon: BarChart3, permission: "ANALYTICS_VIEW" },
+  { name: "Users", href: "/dashboard/users", icon: Users, permission: "USER_CREATE" },
+  { name: "System Settings", href: "/dashboard/settings", icon: Settings, permission: "ROLE_ASSIGN" },
+  { name: "Audit Logs", href: "/dashboard/audit", icon: FileText, permission: "USER_VIEW" },
 ];
 
-export function Sidebar() {
+export function Sidebar({ user }: SidebarProps) {
   const pathname = usePathname();
+  const router = useRouter();
+
+  const hasPermission = (permission: string | null) => {
+    if (!permission) return true;
+    if (!user) return false;
+    if (user.roles?.includes("SUPER_ADMIN")) return true;
+    return user.permissions?.includes(permission);
+  };
+
+  const handleLogout = async () => {
+    await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/logout`, {
+      method: "POST",
+      credentials: "include",
+    });
+
+    router.push("/login");
+  };
 
   return (
-    <div className="flex flex-col w-72 bg-white min-h-screen border-r border-gray-200">
-      {/* Logo */}
-      <div className="flex items-center justify-center py-8">
-        <Image 
-          src="/str.png" 
-          alt="STR Logo" 
-          width={120} 
-          height={120}
-          className="object-contain"
+    <aside className="w-[20%] h-screen fixed bg-white border-r border-gray-200 flex flex-col font-halfre">
+      <div className="flex items-start justify-start pt-8 px-2">
+        <Image
+          src="/STR_Logo.png"
+          alt="STR Logo"
+          width={200}
+          height={200}
+          className="object-cover"
         />
       </div>
-      
-      {/* Navigation */}
-      <nav className="flex-1 px-6 py-4">
-        <div className="space-y-1">
-          {navigation.map((item, index) => {
-            const isActive = pathname === item.href || pathname?.startsWith(item.href + '/');
-            return (
-              <div key={item.name}>
+
+      <nav className="flex-1 px-4 py-6 overflow-y-auto">
+        <div className="space-y-2">
+          {navigation
+            .filter((item) => hasPermission(item.permission))
+            .map((item) => {
+              const isActive =
+                pathname === item.href 
+
+              const Icon = item.icon;
+
+              return (
                 <Link
+                  key={item.name}
                   href={item.href}
                   className={`
-                    flex items-center gap-4 px-4 py-3 text-base font-medium rounded-lg transition-colors
+                    flex items-center gap-3 px-4 py-3 rounded-lg text-lg font-medium transition-all
                     ${
                       isActive
-                        ? 'text-green-600 bg-gray-50'
-                        : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                        ? "bg-green-50 text-green-600"
+                        : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
                     }
                   `}
                 >
-                  <Image 
-                    src={item.icon} 
-                    alt={item.name}
-                    width={24}
-                    height={24}
-                    className="object-contain"
+                  <Icon
+                    size={20}
+                    className={
+                      isActive ? "text-green-600" : "text-gray-500"
+                    }
                   />
-                  <span>{item.name}</span>
+                  {item.name}
                 </Link>
-                {index < navigation.length - 1 && (
-                  <div className="my-2 border-b border-gray-200" />
-                )}
-              </div>
-            );
-          })}
+              );
+            })}
+
+          {/* Logout */}
+          <button
+            onClick={handleLogout}
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-lg font-medium text-red-600 hover:bg-red-50 transition-all"
+          >
+            <LogOut size={20} className="text-red-500" />
+            Logout
+          </button>
         </div>
       </nav>
-    </div>
+    </aside>
   );
 }

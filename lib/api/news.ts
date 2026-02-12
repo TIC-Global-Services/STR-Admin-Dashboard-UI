@@ -82,6 +82,7 @@ export const newsApi = {
     return data;
   },
 
+
   // Admin - Unpublish news
   unpublish: async (id: string): Promise<News> => {
     const { data } = await apiClient.put(`/admin/news/${id}`, { isPublished: false });
