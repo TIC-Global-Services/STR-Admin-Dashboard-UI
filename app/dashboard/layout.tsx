@@ -26,7 +26,7 @@ export default async function DashboardLayout({
   return (
     <div className="flex">
       <Sidebar user={user} />
-      <main className="flex-1 w-[80%] ml-[20%]">{children}</main>
+      <main className="flex-1 lg:w-[80%] lg:ml-[20%] mt-[15%] lg:mt-0">{children}</main>
     </div>
   );
 }

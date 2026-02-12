@@ -11,9 +11,11 @@ import {
   Settings,
   FileText,
   LogOut,
+  Menu,
+  X,
 } from "lucide-react";
 import Image from "next/image";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface UserPayload {
   roles: string[];
@@ -73,6 +75,7 @@ export function Sidebar({ user }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const hasPermission = (permission: string | null) => {
     if (!permission) return true;
@@ -90,11 +93,67 @@ export function Sidebar({ user }: SidebarProps) {
     router.push("/login");
   };
 
+  // Close mobile menu when route changes
+  useEffect(() => {
+    setIsMobileMenuOpen(false);
+  }, [pathname]);
+
+  // Prevent body scroll when mobile menu is open
+  useEffect(() => {
+    if (isMobileMenuOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
+    }
+
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, [isMobileMenuOpen]);
+
   return (
     <>
-      <aside className="w-[20%] h-screen fixed bg-white border-r border-gray-200 flex flex-col font-halfre">
-        {/* Logo */}
-        <div className="flex items-start justify-start pt-8 px-2">
+      {/* Mobile Header */}
+      <div className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-white border-b border-gray-200 z-40 flex items-center justify-between px-4">
+        <Image
+          src="/STR_Logo.png"
+          alt="STR Logo"
+          width={120}
+          height={40}
+          className="object-contain"
+        />
+        <button
+          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+          aria-label="Toggle menu"
+        >
+          {isMobileMenuOpen ? (
+            <X size={24} className="text-gray-600" />
+          ) : (
+            <Menu size={24} className="text-gray-600" />
+          )}
+        </button>
+      </div>
+
+      {/* Mobile Menu Overlay */}
+      {isMobileMenuOpen && (
+        <div
+          className="lg:hidden fixed inset-0 bg-black/50 z-40 mt-16"
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+      )}
+
+      {/* Sidebar */}
+      <aside
+        className={`
+          fixed top-0 left-0 h-screen bg-white border-r border-gray-200 flex flex-col font-halfre z-50 transition-transform duration-300 ease-in-out
+          lg:w-[20%] lg:translate-x-0
+          w-[280px] 
+          ${isMobileMenuOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
+        `}
+      >
+        {/* Logo - Hidden on mobile (shown in header instead) */}
+        <div className="hidden lg:flex items-start justify-start pt-8 px-2">
           <Image
             src="/STR_Logo.png"
             alt="STR Logo"
@@ -103,6 +162,9 @@ export function Sidebar({ user }: SidebarProps) {
             className="object-cover"
           />
         </div>
+
+        {/* Mobile Logo Spacer */}
+        <div className="lg:hidden h-6" />
 
         {/* Navigation */}
         <nav className="flex-1 px-4 py-6 overflow-y-auto">
@@ -117,12 +179,12 @@ export function Sidebar({ user }: SidebarProps) {
                   <Link
                     key={item.name}
                     href={item.href}
-                    className={`flex items-center gap-3 px-4 py-3 rounded-lg text-lg font-medium transition-all
-              ${
-                isActive
-                  ? "bg-green-50 text-green-600"
-                  : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
-              }`}
+                    className={`flex items-center gap-3 px-4 py-3 rounded-lg text-base lg:text-lg font-medium transition-all
+                      ${
+                        isActive
+                          ? "bg-green-50 text-green-600"
+                          : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                      }`}
                   >
                     <Icon
                       size={20}
@@ -140,14 +202,14 @@ export function Sidebar({ user }: SidebarProps) {
           {/* Logout Button */}
           <button
             onClick={() => setShowLogoutModal(true)}
-            className="w-full flex items-center cursor-pointer gap-3 px-4 py-3 rounded-lg text-lg font-medium text-red-600 hover:bg-red-50 transition-all"
+            className="w-full flex items-center cursor-pointer gap-3 px-4 py-3 rounded-lg text-base lg:text-lg font-medium text-red-600 hover:bg-red-50 transition-all"
           >
             <LogOut size={20} className="text-red-500" />
             Logout
           </button>
 
           {/* Developed By */}
-          <div className="text-center text-sm text-gray-400">
+          <div className="text-center text-xs lg:text-sm text-gray-400">
             Developed by{" "}
             <a
               href="https://ticglobalservices.com"
@@ -163,8 +225,8 @@ export function Sidebar({ user }: SidebarProps) {
 
       {/* 🔥 Logout Confirmation Modal */}
       {showLogoutModal && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl shadow-xl w-[400px] p-6">
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-[60] px-4">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-[400px] p-6">
             <h2 className="text-xl font-semibold text-gray-800 mb-4">
               Confirm Logout
             </h2>
