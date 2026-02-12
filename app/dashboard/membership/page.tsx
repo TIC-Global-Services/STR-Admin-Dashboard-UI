@@ -141,7 +141,7 @@ export default function Memberships() {
   if (error) {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
-        <div className="bg-white p-8 rounded-2xl shadow-xl max-w-md border border-slate-200">
+        <div className="bg-white p-8 rounded-2xl  max-w-md border border-slate-200">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center text-2xl">
               ⚠️
@@ -239,7 +239,7 @@ export default function Memberships() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Stats Cards - Static */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+          <div className="bg-white p-6 rounded-xl border border-slate-200 ">
             <div className="flex items-center justify-between mb-3">
               <div className="w-12 h-12 rounded-lg bg-slate-100 flex items-center justify-center text-slate-600 text-xl">
                 <MemberGroup size={18} />
@@ -252,7 +252,7 @@ export default function Memberships() {
             <div className="text-sm text-slate-500">All Members</div>
           </div>
 
-          <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+          <div className="bg-white p-6 rounded-xl border border-slate-200 ">
             <div className="flex items-center justify-between mb-3">
               <div className="w-12 h-12 rounded-lg bg-slate-100 flex items-center justify-center text-slate-600 text-xl">
                 <Timer />
@@ -265,7 +265,7 @@ export default function Memberships() {
             <div className="text-sm text-slate-500">Awaiting Review</div>
           </div>
 
-          <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+          <div className="bg-white p-6 rounded-xl border border-slate-200 ">
             <div className="flex items-center justify-between mb-3">
               <div className="w-12 h-12 rounded-lg bg-emerald-50 flex items-center justify-center text-emerald-600 text-xl">
                 <Verified />
@@ -278,7 +278,7 @@ export default function Memberships() {
             <div className="text-sm text-slate-500">Active Members</div>
           </div>
 
-          <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+          <div className="bg-white p-6 rounded-xl border border-slate-200 ">
             <div className="flex items-center justify-between mb-3">
               <div className="w-12 h-12 rounded-lg bg-rose-50 flex items-center justify-center text-rose-600 text-xl">
                 <Rejected />
@@ -384,7 +384,7 @@ export default function Memberships() {
         </div>
 
         {/* Table */}
-        <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+        <div className="bg-white rounded-xl  border border-slate-200 overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead className="bg-slate-50 border-b border-slate-200">
@@ -530,7 +530,7 @@ export default function Memberships() {
       {/* View Member Modal */}
       {selectedMember && !showRejectModal && (
         <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
-          <div className="bg-white rounded-2xl max-w-3xl w-full max-h-[90vh] overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200">
+          <div className="bg-white rounded-2xl max-w-3xl w-full max-h-[90vh] overflow-hidden  animate-in zoom-in-95 duration-200">
             {/* Modal Header */}
             <div className="bg-slate-900 px-8 py-6 text-white">
               <div className="flex items-center justify-between">
@@ -762,7 +762,7 @@ export default function Memberships() {
       {/* Reject Modal */}
       {showRejectModal && selectedMember && (
         <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
-          <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl animate-in zoom-in-95 duration-200">
+          <div className="bg-white rounded-2xl max-w-md w-full  animate-in zoom-in-95 duration-200">
             <div className="p-8">
               <div className="w-14 h-14 rounded-full bg-rose-100 flex items-center justify-center text-2xl mb-4 mx-auto">
                 ⚠️

@@ -253,7 +253,7 @@ export default function UsersManagement() {
   if (error) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center p-4">
-        <div className="bg-white p-8 rounded-xl border border-gray-200 max-w-md shadow-sm">
+        <div className="bg-white p-8 rounded-xl border border-gray-200 max-w-md ">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
               <XCircle className="w-6 h-6 text-red-600" />
@@ -300,7 +300,7 @@ export default function UsersManagement() {
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-          <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+          <div className="bg-white p-6 rounded-xl border border-gray-200 ">
             <div className="flex items-center justify-between mb-3">
               <div className="w-12 h-12 rounded-lg bg-gray-100 flex items-center justify-center text-gray-600">
                 <Users className="w-6 h-6" />
@@ -313,7 +313,7 @@ export default function UsersManagement() {
             <div className="text-sm text-gray-500">Total Users</div>
           </div>
 
-          <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+          <div className="bg-white p-6 rounded-xl border border-gray-200 ">
             <div className="flex items-center justify-between mb-3">
               <div className="w-12 h-12 rounded-lg bg-green-50 flex items-center justify-center text-green-600">
                 <CheckCircle className="w-6 h-6" />
@@ -326,7 +326,7 @@ export default function UsersManagement() {
             <div className="text-sm text-gray-500">Active Users</div>
           </div>
 
-          <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+          <div className="bg-white p-6 rounded-xl border border-gray-200 ">
             <div className="flex items-center justify-between mb-3">
               <div className="w-12 h-12 rounded-lg bg-gray-100 flex items-center justify-center text-gray-600">
                 <XCircle className="w-6 h-6" />
@@ -369,7 +369,7 @@ export default function UsersManagement() {
               onClick={() => setStatusFilter('all')}
               className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
                 statusFilter === 'all'
-                  ? 'bg-white text-gray-900 shadow-sm'
+                  ? 'bg-white text-gray-900 '
                   : 'text-gray-600 hover:text-gray-900'
               }`}
             >
@@ -380,7 +380,7 @@ export default function UsersManagement() {
               onClick={() => setStatusFilter('active')}
               className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
                 statusFilter === 'active'
-                  ? 'bg-white text-gray-900 shadow-sm'
+                  ? 'bg-white text-gray-900 '
                   : 'text-gray-600 hover:text-gray-900'
               }`}
             >
@@ -391,7 +391,7 @@ export default function UsersManagement() {
               onClick={() => setStatusFilter('inactive')}
               className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
                 statusFilter === 'inactive'
-                  ? 'bg-white text-gray-900 shadow-sm'
+                  ? 'bg-white text-gray-900 '
                   : 'text-gray-600 hover:text-gray-900'
               }`}
             >
@@ -406,7 +406,7 @@ export default function UsersManagement() {
         </div>
 
         {/* Users Table */}
-        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
+        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden ">
           <table className="w-full">
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
@@ -554,7 +554,7 @@ export default function UsersManagement() {
       {/* Create User Modal */}
       {showCreateModal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-xl border border-gray-200 shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-xl border border-gray-200  max-w-md w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6 border-b border-gray-200">
               <h2 className="text-2xl font-bold text-gray-900">Create New User</h2>
             </div>
@@ -654,7 +654,7 @@ export default function UsersManagement() {
       {/* Edit User Modal */}
       {showEditModal && selectedUser && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-xl border border-gray-200 shadow-2xl max-w-md w-full">
+          <div className="bg-white rounded-xl border border-gray-200  max-w-md w-full">
             <div className="p-6 border-b border-gray-200">
               <h2 className="text-2xl font-bold text-gray-900">Edit User</h2>
             </div>
@@ -753,7 +753,7 @@ export default function UsersManagement() {
       {/* View User Modal */}
       {showViewModal && selectedUser && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-xl border border-gray-200 shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-xl border border-gray-200  max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <div className="sticky top-0 bg-white p-6 border-b border-gray-200 flex items-center justify-between z-10">
               <h2 className="text-2xl font-bold text-gray-900">User Details</h2>
               <button
@@ -862,7 +862,7 @@ export default function UsersManagement() {
       {/* Assign Roles Modal */}
       {showRolesModal && selectedUser && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-xl border border-gray-200 shadow-2xl max-w-md w-full">
+          <div className="bg-white rounded-xl border border-gray-200  max-w-md w-full">
             <div className="p-6 border-b border-gray-200">
               <h2 className="text-2xl font-bold text-gray-900">Manage Roles</h2>
               <p className="text-gray-600 mt-1">

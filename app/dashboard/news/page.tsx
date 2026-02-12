@@ -380,7 +380,7 @@ export default function NewsPage() {
               onClick={() => setFilterStatus('all')}
               className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
                 filterStatus === 'all'
-                  ? 'bg-white text-gray-900 shadow-sm'
+                  ? 'bg-white text-gray-900 -sm'
                   : 'text-gray-600 hover:text-gray-900'
               }`}
             >
@@ -390,7 +390,7 @@ export default function NewsPage() {
               onClick={() => setFilterStatus('published')}
               className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
                 filterStatus === 'published'
-                  ? 'bg-white text-gray-900 shadow-sm'
+                  ? 'bg-white text-gray-900 -sm'
                   : 'text-gray-600 hover:text-gray-900'
               }`}
             >
@@ -400,7 +400,7 @@ export default function NewsPage() {
               onClick={() => setFilterStatus('draft')}
               className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
                 filterStatus === 'draft'
-                  ? 'bg-white text-gray-900 shadow-sm'
+                  ? 'bg-white text-gray-900 -sm'
                   : 'text-gray-600 hover:text-gray-900'
               }`}
             >
@@ -415,7 +415,7 @@ export default function NewsPage() {
         </div>
 
         {/* Table */}
-        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
+        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden -sm">
           <table className="w-full">
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
@@ -540,7 +540,7 @@ export default function NewsPage() {
       {/* Create News Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl border border-gray-200 shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-xl border border-gray-200 -2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6 border-b border-gray-200">
               <h2 className="text-2xl font-bold text-gray-900">Create New Article</h2>
             </div>
@@ -757,7 +757,7 @@ export default function NewsPage() {
       {/* Edit News Modal */}
       {showEditModal && editingNews && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl border border-gray-200 shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-xl border border-gray-200 -2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6 border-b border-gray-200">
               <h2 className="text-2xl font-bold text-gray-900">Edit Article</h2>
             </div>
@@ -988,7 +988,7 @@ export default function NewsPage() {
       {/* Preview Modal */}
       {showPreviewModal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl border border-gray-200 shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-xl border border-gray-200 -2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
             <div className="sticky top-0 bg-white p-6 border-b border-gray-200 flex items-center justify-between z-10">
               <h2 className="text-2xl font-bold text-gray-900">Preview</h2>
               <button

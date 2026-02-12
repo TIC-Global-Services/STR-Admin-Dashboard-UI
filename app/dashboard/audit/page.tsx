@@ -110,22 +110,22 @@ export default function AuditLogsPage() {
 
         {/* Stats */}
         <div className="grid md:grid-cols-3 gap-8 mb-12">
-          <div className="bg-gray-50 p-8 rounded-2xl">
+          <div className="bg-gray-50 p-8 rounded-2xl border border-gray-200">
             <p className="text-sm text-gray-500 mb-2 uppercase tracking-wide">Total Logs</p>
             <p className="text-4xl font-bold">{total.toLocaleString()}</p>
           </div>
-          <div className="bg-gray-50 p-8 rounded-2xl">
+          <div className="bg-gray-50 p-8 rounded-2xl border border-gray-200">
             <p className="text-sm text-gray-500 mb-2 uppercase tracking-wide">Unique Users</p>
             <p className="text-4xl font-bold">{uniqueUsers}</p>
           </div>
-          <div className="bg-gray-50 p-8 rounded-2xl">
+          <div className="bg-gray-50 p-8 rounded-2xl border border-gray-200">
             <p className="text-sm text-gray-500 mb-2 uppercase tracking-wide">Current Page</p>
             <p className="text-4xl font-bold">{page}</p>
           </div>
         </div>
 
         {/* Filters */}
-        <div className="bg-gray-50 p-6 rounded-2xl flex flex-wrap gap-4 mb-8">
+        <div className="bg-gray-50 p-6 rounded-2xl flex flex-wrap gap-4 mb-8 border border-gray-200">
           <input
             type="text"
             value={filter.action}
@@ -159,7 +159,7 @@ export default function AuditLogsPage() {
         </div>
 
         {/* Logs Table */}
-        <div className="bg-white rounded-2xl overflow-hidden shadow-sm">
+        <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden ">
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>

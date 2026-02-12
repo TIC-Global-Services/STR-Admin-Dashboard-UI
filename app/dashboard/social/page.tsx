@@ -224,7 +224,7 @@ export default function SocialPage() {
     }, [post]);
 
     return (
-      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden  transition-shadow">
         {/* Preview Area - Show actual post */}
         <div className="relative bg-gray-50 border-b border-gray-200" style={{ minHeight: '400px' }}>
           {post.platform === 'INSTAGRAM' ? (
@@ -421,7 +421,7 @@ export default function SocialPage() {
       {/* Create Post Modal */}
       {showCreateModal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-xl border border-gray-200 shadow-2xl max-w-lg w-full">
+          <div className="bg-white rounded-xl border border-gray-200  max-w-lg w-full">
             <div className="p-6 border-b border-gray-200 flex items-center justify-between">
               <div className="flex items-center gap-3">
                 {currentPlatform === 'INSTAGRAM' ? (
@@ -512,7 +512,7 @@ export default function SocialPage() {
       {/* Edit Post Modal */}
       {showEditModal && editingPost && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-xl border border-gray-200 shadow-2xl max-w-lg w-full">
+          <div className="bg-white rounded-xl border border-gray-200  max-w-lg w-full">
             <div className="p-6 border-b border-gray-200 flex items-center justify-between">
               <div className="flex items-center gap-3">
                 {editingPost.platform === 'INSTAGRAM' ? (
@@ -627,7 +627,7 @@ export default function SocialPage() {
       {/* Preview Modal */}
       {showPreviewModal && previewPost && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-xl border border-gray-200 shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-xl border border-gray-200  max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <div className="sticky top-0 bg-white p-6 border-b border-gray-200 flex items-center justify-between z-10">
               <h2 className="text-2xl font-bold text-gray-900">Post Preview</h2>
               <button
