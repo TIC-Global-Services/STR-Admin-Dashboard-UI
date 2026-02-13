@@ -13,6 +13,7 @@ import {
   LogOut,
   Menu,
   X,
+  Loader2,
 } from "lucide-react";
 import Image from "next/image";
 import { useState, useEffect } from "react";
@@ -76,6 +77,7 @@ export function Sidebar({ user }: SidebarProps) {
   const router = useRouter();
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const hasPermission = (permission: string | null) => {
     if (!permission) return true;
@@ -85,12 +87,24 @@ export function Sidebar({ user }: SidebarProps) {
   };
 
   const handleLogout = async () => {
-    await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/logout`, {
-      method: "POST",
-      credentials: "include",
-    });
+    setIsLoggingOut(true);
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/logout`, {
+        method: "POST",
+        credentials: "include",
+      });
 
-    router.push("/login");
+      // Even if response is not ok, we usually still want to redirect to login
+      router.push("/login");
+      router.refresh(); // Optional: helps clear any cached data
+    } catch (err) {
+      console.error("Logout failed:", err);
+      // Still redirect even on error (best effort)
+      router.push("/login");
+    } finally {
+      setIsLoggingOut(false);
+      setShowLogoutModal(false);
+    }
   };
 
   // Close mobile menu when route changes
@@ -152,7 +166,7 @@ export function Sidebar({ user }: SidebarProps) {
           ${isMobileMenuOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
         `}
       >
-        {/* Logo - Hidden on mobile (shown in header instead) */}
+        {/* Logo - Hidden on mobile */}
         <div className="hidden lg:flex items-start justify-start pt-8 px-2">
           <Image
             src="/STR_Logo.png"
@@ -203,6 +217,7 @@ export function Sidebar({ user }: SidebarProps) {
           <button
             onClick={() => setShowLogoutModal(true)}
             className="w-full flex items-center cursor-pointer gap-3 px-4 py-3 rounded-lg text-base lg:text-lg font-medium text-red-600 hover:bg-red-50 transition-all"
+            disabled={isLoggingOut}
           >
             <LogOut size={20} className="text-red-500" />
             Logout
@@ -223,7 +238,7 @@ export function Sidebar({ user }: SidebarProps) {
         </div>
       </aside>
 
-      {/* 🔥 Logout Confirmation Modal */}
+      {/* Logout Confirmation Modal */}
       {showLogoutModal && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-[60] px-4">
           <div className="bg-white rounded-xl shadow-xl w-full max-w-[400px] p-6">
@@ -239,15 +254,31 @@ export function Sidebar({ user }: SidebarProps) {
               <button
                 onClick={() => setShowLogoutModal(false)}
                 className="px-4 py-2 rounded-lg border cursor-pointer border-gray-300 text-gray-600 hover:bg-gray-100"
+                disabled={isLoggingOut}
               >
                 Cancel
               </button>
 
               <button
                 onClick={handleLogout}
-                className="px-4 py-2 rounded-lg cursor-pointer bg-red-600 text-white hover:bg-red-700"
+                disabled={isLoggingOut}
+                className={`
+                  px-4 py-2 rounded-lg cursor-pointer min-w-[110px] flex items-center justify-center gap-2
+                  ${isLoggingOut 
+                    ? "bg-red-400 cursor-not-allowed" 
+                    : "bg-red-600 hover:bg-red-700"
+                  }
+                  text-white transition-colors
+                `}
               >
-                Yes, Logout
+                {isLoggingOut ? (
+                  <>
+                    <Loader2 size={18} className="animate-spin" />
+                    Logging out...
+                  </>
+                ) : (
+                  "Yes, Logout"
+                )}
               </button>
             </div>
           </div>

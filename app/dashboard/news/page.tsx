@@ -330,14 +330,14 @@ export default function NewsPage() {
     <div className="min-h-screen bg-white p-4 sm:p-6 lg:p-8">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <div className="flex  sm:items-center justify-between gap-4 mb-6">
           <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900">News and Events</h1>
           <div className="flex items-center gap-3">
             <button 
               onClick={fetchNews}
               className="px-4 py-2 text-gray-600 hover:text-gray-900 transition-colors text-sm"
             >
-              <span className="mr-2">↻</span>
+              <span className="mr-2 text-xl">↻</span>
               <span className="hidden sm:inline">Refresh</span>
             </button>
             <button 

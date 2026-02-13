@@ -4,16 +4,10 @@ import { useState, useEffect, useMemo } from "react";
 import {
   Users,
   MapPin,
-  Droplet,
-  Briefcase,
-  CheckCircle,
-  Clock,
-  XCircle,
   Download,
   RefreshCw,
-  PieChart as PieChartIcon,
-  LineChartIcon,
-  Filter as FilterIcon,
+  XCircle,
+  TrendingUp,
 } from "lucide-react";
 
 import {
@@ -59,17 +53,34 @@ const STATUS_COLORS: Record<string, string> = {
   REJECTED: "#ef4444",
 };
 
+const CHART_COLORS = [
+  "#3b82f6", // blue-500
+  "#60a5fa", // blue-400
+  "#93c5fd", // blue-300
+  "#64748b", // slate-500
+  "#94a3b8", // slate-400
+  "#cbd5e1", // slate-300
+  "#2563eb", // blue-600
+  "#1e40af", // blue-700
+  "#475569", // slate-600
+  "#334155", // slate-700
+];
+
 // ──────────────────────────────────────────────── Component
 
 export default function AnalyticsPage() {
-  const [dimensions, setDimensions] = useState<MembershipDimensions | null>(null);
+  const [dimensions, setDimensions] = useState<MembershipDimensions | null>(
+    null,
+  );
   const [analytics, setAnalytics] = useState<MembershipAnalytics | null>(null);
   const [allMembers, setAllMembers] = useState<Membership[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMembers, setLoadingMembers] = useState(false);
 
   // Filter from clicking charts
-  const [dimensionFilter, setDimensionFilter] = useState<FilterState | null>(null);
+  const [dimensionFilter, setDimensionFilter] = useState<FilterState | null>(
+    null,
+  );
 
   // Additional filters from table controls
   const [tableFilters, setTableFilters] = useState<{
@@ -124,7 +135,10 @@ export default function AnalyticsPage() {
     if (dimensionFilter) {
       result = result.filter((m) => {
         const val = m[dimensionFilter.dimension as keyof Membership];
-        return val && String(val).toLowerCase() === dimensionFilter.value.toLowerCase();
+        return (
+          val &&
+          String(val).toLowerCase() === dimensionFilter.value.toLowerCase()
+        );
       });
     }
 
@@ -168,28 +182,39 @@ export default function AnalyticsPage() {
   const trendData = useMemo(() => analytics?.daily ?? [], [analytics]);
 
   const topStates = useMemo(
-    () => (dimensions?.state ?? []).sort((a, b) => b.count - a.count).slice(0, 10),
-    [dimensions]
+    () =>
+      (dimensions?.state ?? []).sort((a, b) => b.count - a.count).slice(0, 10),
+    [dimensions],
   );
 
   const topDistricts = useMemo(
-    () => (dimensions?.district ?? []).sort((a, b) => b.count - a.count).slice(0, 10),
-    [dimensions]
+    () =>
+      (dimensions?.district ?? [])
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 10),
+    [dimensions],
   );
 
   const topZones = useMemo(
-    () => (dimensions?.zone ?? []).sort((a, b) => b.count - a.count).slice(0, 8),
-    [dimensions]
+    () =>
+      (dimensions?.zone ?? []).sort((a, b) => b.count - a.count).slice(0, 8),
+    [dimensions],
   );
 
   const bloodGroups = useMemo(
-    () => (dimensions?.bloodGroup ?? []).sort((a, b) => b.count - a.count).slice(0, 8),
-    [dimensions]
+    () =>
+      (dimensions?.bloodGroup ?? [])
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 8),
+    [dimensions],
   );
 
   const occupations = useMemo(
-    () => (dimensions?.occupation ?? []).sort((a, b) => b.count - a.count).slice(0, 10),
-    [dimensions]
+    () =>
+      (dimensions?.occupation ?? [])
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 10),
+    [dimensions],
   );
 
   // ──────────────────────────────────────────────── Export
@@ -220,95 +245,126 @@ export default function AnalyticsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center">
-          <RefreshCw className="w-12 h-12 text-blue-600 animate-spin mx-auto mb-4" />
-          <p className="text-lg font-medium text-gray-700">Loading analytics...</p>
+          <RefreshCw className="w-12 h-12 text-slate-600 animate-spin mx-auto mb-4" />
+          <p className="text-lg font-medium text-slate-700">
+            Loading analytics...
+          </p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50/80 pb-12">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
-
+    <div className="min-h-screen bg-white pb-12 w-screen md:w-full overflow-x-hidden">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 sm:mb-8 gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Membership Analytics</h1>
-            <p className="text-gray-600 mt-1">
-              {allMembers.length} members • {analytics?.daily?.length || 0} days tracked
+            <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">
+              Membership Analytics
+            </h1>
+            <p className="text-slate-600 mt-1 text-sm sm:text-base">
+              {allMembers.length} members • {analytics?.daily?.length || 0} days
+              tracked
             </p>
           </div>
-          <div className="flex gap-3 flex-wrap">
+          <div className="flex gap-2 sm:gap-3 flex-wrap w-full sm:w-auto">
             <button
               onClick={loadDashboardData}
-              className="px-4 py-2 bg-white border border-gray-300 border border-gray-300-gray-300 rounded-lg hover:bg-gray-50 flex items-center gap-2 "
+              className="flex-1 sm:flex-none px-3 sm:px-4 py-2 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 flex items-center justify-center gap-2 text-sm transition-colors"
             >
               <RefreshCw size={16} /> Refresh
             </button>
             <button
               onClick={exportToExcel}
               disabled={displayedMembers.length === 0}
-              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 "
+              className="flex-1 sm:flex-none px-3 sm:px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm transition-colors"
             >
-              <Download size={16} /> Export Excel
+              <Download size={16} /> Export
             </button>
           </div>
         </div>
 
         {/* KPI Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-          <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-6 text-white ">
-            <p className="text-sm font-medium opacity-90">Total Members</p>
-            <p className="text-3xl font-bold mt-2">{analytics?.summary?.total?.toLocaleString() ?? "0"}</p>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-10">
+          <div className="bg-slate-900 rounded-xl p-4 sm:p-6 text-white">
+            <p className="text-xs sm:text-sm font-medium opacity-80">Total Members</p>
+            <p className="text-2xl sm:text-3xl font-bold mt-1 sm:mt-2">
+              {analytics?.summary?.total?.toLocaleString() ?? "0"}
+            </p>
           </div>
-          <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-6 text-white ">
-            <p className="text-sm font-medium opacity-90">Approved</p>
-            <p className="text-3xl font-bold mt-2">{analytics?.summary?.approved?.toLocaleString() ?? "0"}</p>
+          <div className="bg-green-600 rounded-xl p-4 sm:p-6 text-white">
+            <p className="text-xs sm:text-sm font-medium opacity-80">Approved</p>
+            <p className="text-2xl sm:text-3xl font-bold mt-1 sm:mt-2">
+              {analytics?.summary?.approved?.toLocaleString() ?? "0"}
+            </p>
           </div>
-          <div className="bg-gradient-to-br from-amber-500 to-amber-600 rounded-xl p-6 text-white ">
-            <p className="text-sm font-medium opacity-90">Pending</p>
-            <p className="text-3xl font-bold mt-2">{analytics?.summary?.pending?.toLocaleString() ?? "0"}</p>
+          <div className="bg-amber-500 rounded-xl p-4 sm:p-6 text-white">
+            <p className="text-xs sm:text-sm font-medium opacity-80">Pending</p>
+            <p className="text-2xl sm:text-3xl font-bold mt-1 sm:mt-2">
+              {analytics?.summary?.pending?.toLocaleString() ?? "0"}
+            </p>
           </div>
-          <div className="bg-gradient-to-br from-red-500 to-red-600 rounded-xl p-6 text-white ">
-            <p className="text-sm font-medium opacity-90">Rejected</p>
-            <p className="text-3xl font-bold mt-2">{analytics?.summary?.rejected?.toLocaleString() ?? "0"}</p>
+          <div className="bg-red-600 rounded-xl p-4 sm:p-6 text-white">
+            <p className="text-xs sm:text-sm font-medium opacity-80">Rejected</p>
+            <p className="text-2xl sm:text-3xl font-bold mt-1 sm:mt-2">
+              {analytics?.summary?.rejected?.toLocaleString() ?? "0"}
+            </p>
           </div>
         </div>
 
         {/* Charts */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-10">
-
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-6 sm:mb-10">
           {/* Trend */}
-          <div className="bg-white rounded-xl  border border-gray-300 p-6">
-            <div className="flex items-center gap-3 mb-5">
-              <div className="p-2 bg-gray-100 rounded-lg">
-                <LineChartIcon className="w-5 h-5 text-blue-600" />
+          <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-6">
+            <div className="flex items-center gap-3 mb-4 sm:mb-5">
+              <div className="p-2 bg-slate-100 rounded-lg">
+                <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-slate-700" />
               </div>
-              <h3 className="text-lg font-semibold">Membership Trend</h3>
+              <h3 className="text-base sm:text-lg font-semibold text-slate-900">Membership Trend</h3>
             </div>
-            <ResponsiveContainer width="100%" height={320}>
+            <ResponsiveContainer width="100%" height={280}>
               <AreaChart data={trendData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="date" />
-                <YAxis />
-                <Tooltip />
-                <Area type="monotone" dataKey="count" stroke="#3b82f6" fill="#3b82f6" fillOpacity={0.2} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                <XAxis 
+                  dataKey="date" 
+                  tick={{ fontSize: 12 }}
+                  stroke="#94a3b8"
+                />
+                <YAxis 
+                  tick={{ fontSize: 12 }}
+                  stroke="#94a3b8"
+                />
+                <Tooltip 
+                  contentStyle={{
+                    backgroundColor: '#fff',
+                    border: '1px solid #e2e8f0',
+                    borderRadius: '8px',
+                  }}
+                />
+                <Area
+                  type="monotone"
+                  dataKey="count"
+                  stroke="#3b82f6"
+                  fill="#3b82f6"
+                  fillOpacity={0.1}
+                  strokeWidth={2}
+                />
               </AreaChart>
             </ResponsiveContainer>
           </div>
 
           {/* Status Pie */}
-          <div className="bg-white rounded-xl  border border-gray-300 p-6">
-            <div className="flex items-center gap-3 mb-5">
-              <div className="p-2 bg-gray-100 rounded-lg">
-                <PieChartIcon className="w-5 h-5 text-purple-600" />
+          <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-6">
+            <div className="flex items-center gap-3 mb-4 sm:mb-5">
+              <div className="p-2 bg-slate-100 rounded-lg">
+                <Users className="w-4 h-4 sm:w-5 sm:h-5 text-slate-700" />
               </div>
-              <h3 className="text-lg font-semibold">Status Distribution</h3>
+              <h3 className="text-base sm:text-lg font-semibold text-slate-900">Status Distribution</h3>
             </div>
-            <ResponsiveContainer width="100%" height={320}>
+            <ResponsiveContainer width="100%" height={280}>
               <PieChart>
                 <Pie
                   data={statusPieData}
@@ -316,137 +372,154 @@ export default function AnalyticsPage() {
                   nameKey="name"
                   cx="50%"
                   cy="50%"
-                  outerRadius={110}
-                  label={({ name, percent = 0 }) => `${name} (${(percent * 100).toFixed(0)}%)`}
+                  outerRadius={90}
+                  label={({ name, percent = 0 }) =>
+                    `${name} (${(percent * 100).toFixed(0)}%)`
+                  }
+                  labelLine={{ stroke: '#94a3b8', strokeWidth: 1 }}
                 >
                   {statusPieData.map((entry, i) => (
                     <Cell key={`cell-${i}`} fill={entry.color} />
                   ))}
                 </Pie>
-                <Tooltip />
-                <Legend />
+                <Tooltip 
+                  contentStyle={{
+                    backgroundColor: '#fff',
+                    border: '1px solid #e2e8f0',
+                    borderRadius: '8px',
+                  }}
+                />
               </PieChart>
             </ResponsiveContainer>
           </div>
 
           {/* Top States */}
-          <div className="bg-white rounded-xl  border border-gray-300 p-6">
-            <div className="flex items-center gap-3 mb-5">
-              <div className="p-2 bg-gray-100 rounded-lg">
-                <MapPin className="w-5 h-5 text-blue-600" />
+          <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-6">
+            <div className="flex items-center gap-3 mb-4 sm:mb-5">
+              <div className="p-2 bg-slate-100 rounded-lg">
+                <MapPin className="w-4 h-4 sm:w-5 sm:h-5 text-slate-700" />
               </div>
-              <h3 className="text-lg font-semibold">Top States</h3>
+              <h3 className="text-base sm:text-lg font-semibold text-slate-900">Top States</h3>
             </div>
-            <ResponsiveContainer width="100%" height={340}>
-              <BarChart data={topStates} layout="vertical" margin={{ left: 100 }}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis type="number" />
-                <YAxis dataKey="label" type="category" />
-                <Tooltip />
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={topStates} layout="vertical" margin={{ left: 10, right: 10 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                <XAxis type="number" tick={{ fontSize: 11 }} stroke="#94a3b8" />
+                <YAxis 
+                  dataKey="label" 
+                  type="category" 
+                  width={80}
+                  tick={{ fontSize: 10 }}
+                  stroke="#94a3b8"
+                />
+                <Tooltip 
+                  contentStyle={{
+                    backgroundColor: '#fff',
+                    border: '1px solid #e2e8f0',
+                    borderRadius: '8px',
+                  }}
+                />
                 <Bar
                   dataKey="count"
-                  fill="#3b82f6"
+                  fill="#64748b"
                   radius={[0, 4, 4, 0]}
-                  shape={(props: any) => {
-                    const { x, y, width, height, payload } = props;
-                    return (
-                      <g>
-                        <rect
-                          x={x}
-                          y={y}
-                          width={width}
-                          height={height}
-                          fill={props.fill}
-                          rx={4}
-                          ry={4}
-                          style={{ cursor: "pointer" }}
-                          onClick={() => payload?.label && setDimensionFilter({ dimension: "state", value: payload.label })}
-                        />
-                      </g>
-                    );
+                  onClick={(data: any) => {
+                    if (data?.label) {
+                      setDimensionFilter({
+                        dimension: "state",
+                        value: data.label,
+                      });
+                    }
                   }}
+                  style={{ cursor: "pointer" }}
                 />
               </BarChart>
             </ResponsiveContainer>
           </div>
 
           {/* Top Districts */}
-          <div className="bg-white rounded-xl  border border-gray-300 p-6">
-            <div className="flex items-center gap-3 mb-5">
-              <div className="p-2 bg-gray-100 rounded-lg">
-                <MapPin className="w-5 h-5 text-purple-600" />
+          <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-6">
+            <div className="flex items-center gap-3 mb-4 sm:mb-5">
+              <div className="p-2 bg-slate-100 rounded-lg">
+                <MapPin className="w-4 h-4 sm:w-5 sm:h-5 text-slate-700" />
               </div>
-              <h3 className="text-lg font-semibold">Top Districts</h3>
+              <h3 className="text-base sm:text-lg font-semibold text-slate-900">Top Districts</h3>
             </div>
-            <ResponsiveContainer width="100%" height={340}>
-              <BarChart data={topDistricts} layout="vertical" margin={{ left: 120 }}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis type="number" />
-                <YAxis dataKey="label" type="category" />
-                <Tooltip />
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={topDistricts} layout="vertical" margin={{ left: 10, right: 10 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                <XAxis type="number" tick={{ fontSize: 11 }} stroke="#94a3b8" />
+                <YAxis
+                  dataKey="label"
+                  type="category"
+                  width={80}
+                  tick={{ fontSize: 10 }}
+                  stroke="#94a3b8"
+                />
+                <Tooltip 
+                  contentStyle={{
+                    backgroundColor: '#fff',
+                    border: '1px solid #e2e8f0',
+                    borderRadius: '8px',
+                  }}
+                />
                 <Bar
                   dataKey="count"
-                  fill="#8b5cf6"
+                  fill="#60a5fa"
                   radius={[0, 4, 4, 0]}
-                  shape={(props: any) => {
-                    const { x, y, width, height, payload } = props;
-                    return (
-                      <g>
-                        <rect
-                          x={x}
-                          y={y}
-                          width={width}
-                          height={height}
-                          fill={props.fill}
-                          rx={4}
-                          ry={4}
-                          style={{ cursor: "pointer" }}
-                          onClick={() => payload?.label && setDimensionFilter({ dimension: "district", value: payload.label })}
-                        />
-                      </g>
-                    );
+                  onClick={(data: any) => {
+                    if (data?.label) {
+                      setDimensionFilter({
+                        dimension: "district",
+                        value: data.label,
+                      });
+                    }
                   }}
+                  style={{ cursor: "pointer" }}
                 />
               </BarChart>
             </ResponsiveContainer>
           </div>
 
           {/* Top Zones */}
-          <div className="bg-white rounded-xl  border border-gray-300 p-6">
-            <div className="flex items-center gap-3 mb-5">
-              <div className="p-2 bg-gray-100 rounded-lg">
-                <MapPin className="w-5 h-5 text-green-600" />
+          <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-6">
+            <div className="flex items-center gap-3 mb-4 sm:mb-5">
+              <div className="p-2 bg-slate-100 rounded-lg">
+                <MapPin className="w-4 h-4 sm:w-5 sm:h-5 text-slate-700" />
               </div>
-              <h3 className="text-lg font-semibold">Top Zones</h3>
+              <h3 className="text-base sm:text-lg font-semibold text-slate-900">Top Zones</h3>
             </div>
-            <ResponsiveContainer width="100%" height={340}>
-              <BarChart data={topZones} layout="vertical" margin={{ left: 100 }}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis type="number" />
-                <YAxis dataKey="label" type="category" />
-                <Tooltip />
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={topZones} layout="vertical" margin={{ left: 10, right: 10 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                <XAxis type="number" tick={{ fontSize: 11 }} stroke="#94a3b8" />
+                <YAxis 
+                  dataKey="label" 
+                  type="category" 
+                  width={80}
+                  tick={{ fontSize: 10 }}
+                  stroke="#94a3b8"
+                />
+                <Tooltip 
+                  contentStyle={{
+                    backgroundColor: '#fff',
+                    border: '1px solid #e2e8f0',
+                    borderRadius: '8px',
+                  }}
+                />
                 <Bar
                   dataKey="count"
-                  fill="#10b981"
+                  fill="#475569"
                   radius={[0, 4, 4, 0]}
-                  shape={(props: any) => {
-                    const { x, y, width, height, payload } = props;
-                    return (
-                      <g>
-                        <rect
-                          x={x}
-                          y={y}
-                          width={width}
-                          height={height}
-                          fill={props.fill}
-                          rx={4}
-                          ry={4}
-                          style={{ cursor: "pointer" }}
-                          onClick={() => payload?.label && setDimensionFilter({ dimension: "zone", value: payload.label })}
-                        />
-                      </g>
-                    );
+                  onClick={(data: any) => {
+                    if (data?.label) {
+                      setDimensionFilter({
+                        dimension: "zone",
+                        value: data.label,
+                      });
+                    }
                   }}
+                  style={{ cursor: "pointer" }}
                 />
               </BarChart>
             </ResponsiveContainer>
@@ -454,48 +527,57 @@ export default function AnalyticsPage() {
         </div>
 
         {/* Members Table with Multiple Filters */}
-        <div className="bg-white rounded-xl  border border-gray-300 overflow-hidden">
-          <div className="p-6 border border-gray-300 bg-gradient-to-r from-blue-50 to-indigo-50">
+        <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+          <div className="p-4 sm:p-6 border-b border-slate-200 bg-slate-50">
             <div className="flex flex-col gap-4">
-              <div className="flex items-center justify-between flex-wrap gap-4">
+              <div className="flex items-start sm:items-center justify-between flex-col sm:flex-row gap-3 sm:gap-4">
                 <div className="flex items-center gap-3">
-                  <Users className="w-6 h-6 text-blue-600" />
-                  <h3 className="text-xl font-semibold text-gray-900">
-                    Membership Records
+                  <Users className="w-5 h-5 sm:w-6 sm:h-6 text-slate-700" />
+                  <div>
+                    <h3 className="text-lg sm:text-xl font-semibold text-slate-900">
+                      Membership Records
+                    </h3>
                     {dimensionFilter && (
-                      <span className="ml-2 text-blue-600 text-base">
-                        • {dimensionFilter.dimension}: "{dimensionFilter.value}"
+                      <span className="text-xs sm:text-sm text-slate-600 mt-0.5 block">
+                        {dimensionFilter.dimension}: "{dimensionFilter.value}"
                       </span>
                     )}
-                  </h3>
+                  </div>
                 </div>
 
-                <div className="flex flex-wrap gap-3">
+                <div className="flex flex-wrap gap-2 w-full sm:w-auto">
                   <button
                     onClick={clearAllFilters}
-                    className="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-md text-sm flex items-center gap-2"
+                    className="flex-1 sm:flex-none px-3 py-2 bg-slate-200 hover:bg-slate-300 rounded-lg text-sm flex items-center justify-center gap-2 transition-colors"
                   >
-                    <XCircle size={16} /> Clear All Filters
+                    <XCircle size={16} /> Clear Filters
                   </button>
 
                   <button
                     onClick={exportToExcel}
                     disabled={displayedMembers.length === 0}
-                    className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                    className="flex-1 sm:flex-none px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm transition-colors"
                   >
-                    <Download size={16} /> Export Excel
+                    <Download size={16} /> Export
                   </button>
                 </div>
               </div>
 
               {/* Filter Controls */}
-              <div className="flex flex-wrap gap-3 items-end">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
                 <div>
-                  <label className="block text-xs text-gray-600 mb-1">Status</label>
+                  <label className="block text-xs font-medium text-slate-700 mb-1.5">
+                    Status
+                  </label>
                   <select
                     value={tableFilters.status || ""}
-                    onChange={(e) => setTableFilters(p => ({ ...p, status: e.target.value || undefined }))}
-                    className="px-3 py-2 border border-gray-300 border border-gray-300-gray-300 rounded-md text-sm min-w-[140px]"
+                    onChange={(e) =>
+                      setTableFilters((p) => ({
+                        ...p,
+                        status: e.target.value || undefined,
+                      }))
+                    }
+                    className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-transparent"
                   >
                     <option value="">All</option>
                     <option value="PENDING">Pending</option>
@@ -505,63 +587,99 @@ export default function AnalyticsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-xs text-gray-600 mb-1">Blood Group</label>
+                  <label className="block text-xs font-medium text-slate-700 mb-1.5">
+                    Blood Group
+                  </label>
                   <select
                     value={tableFilters.bloodGroup || ""}
-                    onChange={(e) => setTableFilters(p => ({ ...p, bloodGroup: e.target.value || undefined }))}
-                    className="px-3 py-2 border border-gray-300 border border-gray-300-gray-300 rounded-md text-sm min-w-[140px]"
+                    onChange={(e) =>
+                      setTableFilters((p) => ({
+                        ...p,
+                        bloodGroup: e.target.value || undefined,
+                      }))
+                    }
+                    className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-transparent"
                   >
                     <option value="">All</option>
-                    {dimensions?.bloodGroup?.map(item => (
-                      <option key={item.label} value={item.label}>{item.label}</option>
+                    {dimensions?.bloodGroup?.map((item) => (
+                      <option key={item.label} value={item.label}>
+                        {item.label}
+                      </option>
                     ))}
                   </select>
                 </div>
 
                 <div>
-                  <label className="block text-xs text-gray-600 mb-1">State</label>
+                  <label className="block text-xs font-medium text-slate-700 mb-1.5">
+                    State
+                  </label>
                   <select
                     value={tableFilters.state || ""}
-                    onChange={(e) => setTableFilters(p => ({ ...p, state: e.target.value || undefined }))}
-                    className="px-3 py-2 border border-gray-300 border border-gray-300-gray-300 rounded-md text-sm min-w-[160px]"
+                    onChange={(e) =>
+                      setTableFilters((p) => ({
+                        ...p,
+                        state: e.target.value || undefined,
+                      }))
+                    }
+                    className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-transparent"
                   >
                     <option value="">All States</option>
-                    {dimensions?.state?.map(item => (
-                      <option key={item.label} value={item.label}>{item.label}</option>
+                    {dimensions?.state?.map((item) => (
+                      <option key={item.label} value={item.label}>
+                        {item.label}
+                      </option>
                     ))}
                   </select>
                 </div>
 
                 <div>
-                  <label className="block text-xs text-gray-600 mb-1">District</label>
+                  <label className="block text-xs font-medium text-slate-700 mb-1.5">
+                    District
+                  </label>
                   <select
                     value={tableFilters.district || ""}
-                    onChange={(e) => setTableFilters(p => ({ ...p, district: e.target.value || undefined }))}
-                    className="px-3 py-2 border border-gray-300 border border-gray-300-gray-300 rounded-md text-sm min-w-[160px]"
+                    onChange={(e) =>
+                      setTableFilters((p) => ({
+                        ...p,
+                        district: e.target.value || undefined,
+                      }))
+                    }
+                    className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-transparent"
                   >
                     <option value="">All Districts</option>
-                    {dimensions?.district?.map(item => (
-                      <option key={item.label} value={item.label}>{item.label}</option>
+                    {dimensions?.district?.map((item) => (
+                      <option key={item.label} value={item.label}>
+                        {item.label}
+                      </option>
                     ))}
                   </select>
                 </div>
 
                 <div>
-                  <label className="block text-xs text-gray-600 mb-1">Zone</label>
+                  <label className="block text-xs font-medium text-slate-700 mb-1.5">
+                    Zone
+                  </label>
                   <select
                     value={tableFilters.zone || ""}
-                    onChange={(e) => setTableFilters(p => ({ ...p, zone: e.target.value || undefined }))}
-                    className="px-3 py-2 border border-gray-300 border border-gray-300-gray-300 rounded-md text-sm min-w-[140px]"
+                    onChange={(e) =>
+                      setTableFilters((p) => ({
+                        ...p,
+                        zone: e.target.value || undefined,
+                      }))
+                    }
+                    className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-transparent"
                   >
                     <option value="">All Zones</option>
-                    {dimensions?.zone?.map(item => (
-                      <option key={item.label} value={item.label}>{item.label}</option>
+                    {dimensions?.zone?.map((item) => (
+                      <option key={item.label} value={item.label}>
+                        {item.label}
+                      </option>
                     ))}
                   </select>
                 </div>
               </div>
 
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-slate-600">
                 Showing {displayedMembers.length} of {allMembers.length} members
               </p>
             </div>
@@ -569,53 +687,87 @@ export default function AnalyticsPage() {
 
           {loadingMembers ? (
             <div className="p-12 text-center">
-              <RefreshCw className="w-8 h-8 animate-spin mx-auto mb-3 text-blue-600" />
-              <p className="text-gray-600">Loading members...</p>
+              <RefreshCw className="w-8 h-8 animate-spin mx-auto mb-3 text-slate-600" />
+              <p className="text-slate-600">Loading members...</p>
             </div>
           ) : displayedMembers.length === 0 ? (
-            <div className="p-16 text-center text-gray-500">
-              <Users className="w-12 h-12 mx-auto mb-4 text-gray-400" />
-              <p className="font-medium">No members found with current filters</p>
-              <p className="text-sm mt-2">Try clearing some filters or refreshing data.</p>
+            <div className="p-12 sm:p-16 text-center text-slate-500">
+              <Users className="w-12 h-12 mx-auto mb-4 text-slate-400" />
+              <p className="font-medium">
+                No members found with current filters
+              </p>
+              <p className="text-sm mt-2">
+                Try clearing some filters or refreshing data.
+              </p>
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full text-sm divide-y divide-gray-200">
-                <thead className="bg-gray-50 sticky top-0 z-10">
+              <table className="w-full text-sm">
+                <thead className="bg-slate-50 border-b border-slate-200">
                   <tr>
-                    <th className="px-6 py-4 text-left font-semibold text-gray-700">Name</th>
-                    <th className="px-6 py-4 text-left font-semibold text-gray-700">Status</th>
-                    <th className="px-6 py-4 text-left font-semibold text-gray-700">Blood Group</th>
-                    <th className="px-6 py-4 text-left font-semibold text-gray-700">State</th>
-                    <th className="px-6 py-4 text-left font-semibold text-gray-700">District</th>
-                    <th className="px-6 py-4 text-left font-semibold text-gray-700">Zone</th>
-                    <th className="px-6 py-4 text-left font-semibold text-gray-700">Phone</th>
-                    <th className="px-6 py-4 text-left font-semibold text-gray-700">Created</th>
+                    <th className="px-4 sm:px-6 py-3 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">
+                      Name
+                    </th>
+                    <th className="px-4 sm:px-6 py-3 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">
+                      Status
+                    </th>
+                    <th className="px-4 sm:px-6 py-3 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">
+                      Blood
+                    </th>
+                    <th className="px-4 sm:px-6 py-3 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">
+                      State
+                    </th>
+                    <th className="px-4 sm:px-6 py-3 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">
+                      District
+                    </th>
+                    <th className="px-4 sm:px-6 py-3 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">
+                      Zone
+                    </th>
+                    <th className="px-4 sm:px-6 py-3 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">
+                      Phone
+                    </th>
+                    <th className="px-4 sm:px-6 py-3 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">
+                      Created
+                    </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-200">
+                <tbody className="bg-white divide-y divide-slate-200">
                   {displayedMembers.map((member) => (
-                    <tr key={member.id} className="hover:bg-blue-50/30">
-                      <td className="px-6 py-4 font-medium">{member.fullName}</td>
-                      <td className="px-6 py-4">
+                    <tr key={member.id} className="hover:bg-slate-50 transition-colors">
+                      <td className="px-4 sm:px-6 py-3 sm:py-4 font-medium text-slate-900 whitespace-nowrap">
+                        {member.fullName}
+                      </td>
+                      <td className="px-4 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
                         <span
-                          className={`inline-flex px-3 py-1 rounded-full text-xs font-medium ${
+                          className={`inline-flex px-2.5 py-1 rounded-full text-xs font-medium ${
                             member.status === "APPROVED"
                               ? "bg-green-100 text-green-800"
                               : member.status === "PENDING"
-                              ? "bg-yellow-100 text-yellow-800"
-                              : "bg-red-100 text-red-800"
+                                ? "bg-yellow-100 text-yellow-800"
+                                : "bg-red-100 text-red-800"
                           }`}
                         >
                           {member.status}
                         </span>
                       </td>
-                      <td className="px-6 py-4">{member.bloodGroup || "—"}</td>
-                      <td className="px-6 py-4">{member.state}</td>
-                      <td className="px-6 py-4">{member.district}</td>
-                      <td className="px-6 py-4">{member.zone}</td>
-                      <td className="px-6 py-4">{member.phone}</td>
-                      <td className="px-6 py-4">{new Date(member.createdAt).toLocaleDateString()}</td>
+                      <td className="px-4 sm:px-6 py-3 sm:py-4 text-slate-700 whitespace-nowrap">
+                        {member.bloodGroup || "—"}
+                      </td>
+                      <td className="px-4 sm:px-6 py-3 sm:py-4 text-slate-700 whitespace-nowrap">
+                        {member.state}
+                      </td>
+                      <td className="px-4 sm:px-6 py-3 sm:py-4 text-slate-700 whitespace-nowrap">
+                        {member.district}
+                      </td>
+                      <td className="px-4 sm:px-6 py-3 sm:py-4 text-slate-700 whitespace-nowrap">
+                        {member.zone}
+                      </td>
+                      <td className="px-4 sm:px-6 py-3 sm:py-4 text-slate-700 whitespace-nowrap">
+                        {member.phone}
+                      </td>
+                      <td className="px-4 sm:px-6 py-3 sm:py-4 text-slate-700 whitespace-nowrap">
+                        {new Date(member.createdAt).toLocaleDateString()}
+                      </td>
                     </tr>
                   ))}
                 </tbody>

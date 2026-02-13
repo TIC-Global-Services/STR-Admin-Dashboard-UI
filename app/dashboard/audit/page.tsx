@@ -92,7 +92,7 @@ export default function AuditLogsPage() {
   const uniqueUsers = new Set(logs.map((l) => l.email)).size;
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white w-screen md:w-full">
       <div className="max-w-7xl mx-auto px-8 py-12">
 
         {/* Header */}
