@@ -7,6 +7,7 @@ export interface News {
   summary?: string;
   content?: string;
   coverImage?: string;
+  bannerImage?: string;
   isPublished?: boolean;
   publishedAt?: string;
   authorId?: string;
@@ -23,6 +24,8 @@ export interface CreateNewsDto {
   summary?: string;
   content: string;
   coverImage?: string;
+  bannerImage?: string;
+  isPublished?: boolean;
 }
 
 export interface UpdateNewsDto {
@@ -30,6 +33,7 @@ export interface UpdateNewsDto {
   summary?: string;
   content?: string;
   coverImage?: string;
+  bannerImage?: string;
   isPublished?: boolean;
 }
 

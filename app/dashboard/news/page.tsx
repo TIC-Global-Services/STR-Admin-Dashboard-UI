@@ -1,9 +1,8 @@
-'use client';
-import { useState, useEffect } from 'react';
-import { newsApi, News } from '@/lib/api/news';
-import Image from 'next/image';
+"use client";
+import { useState, useEffect } from "react";
+import { newsApi, News } from "@/lib/api/news";
+import Image from "next/image";
 import { FiSearch } from "react-icons/fi";
-
 
 export default function NewsPage() {
   const [news, setNews] = useState<News[]>([]);
@@ -16,35 +15,39 @@ export default function NewsPage() {
   const [creating, setCreating] = useState(false);
   const [updating, setUpdating] = useState(false);
   const [editingNews, setEditingNews] = useState<News | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [filterStatus, setFilterStatus] = useState<'all' | 'published' | 'draft'>('all');
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filterStatus, setFilterStatus] = useState<
+    "all" | "published" | "draft"
+  >("all");
   const [formData, setFormData] = useState({
-    title: '',
-    slug: '',
-    summary: '',
-    content: '',
-    coverImage: '',
+    title: "",
+    slug: "",
+    summary: "",
+    content: "",
+    coverImage: "",
+    bannerImage: "",
     isPublished: false,
   });
 
   const [editFormData, setEditFormData] = useState({
-    title: '',
-    slug: '',
-    summary: '',
-    content: '',
-    coverImage: '',
+    title: "",
+    slug: "",
+    summary: "",
+    content: "",
+    coverImage: "",
+    bannerImage: "",
     isPublished: false,
   });
 
   const fetchNews = async () => {
     setLoading(true);
     try {
-      console.log('Fetching news...');
+      console.log("Fetching news...");
       const data = await newsApi.getAll();
-      console.log('News data received:', data);
+      console.log("News data received:", data);
       setNews(data);
     } catch (error) {
-      console.error('Error fetching news:', error);
+      console.error("Error fetching news:", error);
       setNews([]);
     } finally {
       setLoading(false);
@@ -52,14 +55,7 @@ export default function NewsPage() {
   };
 
   useEffect(() => {
-    // Check if user is authenticated before fetching
-    const token = localStorage.getItem('accessToken');
-    if (token) {
-      fetchNews();
-    } else {
-      console.error('No access token found');
-      setLoading(false);
-    }
+    fetchNews();
   }, []);
 
   // Filter and search effect
@@ -67,19 +63,20 @@ export default function NewsPage() {
     let filtered = [...news];
 
     // Apply status filter
-    if (filterStatus === 'published') {
-      filtered = filtered.filter(item => item.isPublished);
-    } else if (filterStatus === 'draft') {
-      filtered = filtered.filter(item => !item.isPublished);
+    if (filterStatus === "published") {
+      filtered = filtered.filter((item) => item.isPublished);
+    } else if (filterStatus === "draft") {
+      filtered = filtered.filter((item) => !item.isPublished);
     }
 
     // Apply search filter
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(item => 
-        item.title.toLowerCase().includes(query) ||
-        (item.summary && item.summary.toLowerCase().includes(query)) ||
-        (item.content && item.content.toLowerCase().includes(query))
+      filtered = filtered.filter(
+        (item) =>
+          item.title.toLowerCase().includes(query) ||
+          (item.summary && item.summary.toLowerCase().includes(query)) ||
+          (item.content && item.content.toLowerCase().includes(query)),
       );
     }
 
@@ -95,15 +92,18 @@ export default function NewsPage() {
       }
       fetchNews();
     } catch (error) {
-      console.error('Failed to toggle publish status:', error);
+      console.error("Failed to toggle publish status:", error);
     }
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) => {
     const { name, value, type } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : value
+      [name]:
+        type === "checkbox" ? (e.target as HTMLInputElement).checked : value,
     }));
   };
 
@@ -115,24 +115,27 @@ export default function NewsPage() {
         summary: formData.summary,
         content: formData.content,
         coverImage: formData.coverImage || undefined,
+        bannerImage: formData.bannerImage || undefined,
+        isPublished: formData.isPublished,
       });
-      
+
       // Reset form and close modal
       setFormData({
-        title: '',
-        slug: '',
-        summary: '',
-        content: '',
-        coverImage: '',
+        title: "",
+        slug: "",
+        summary: "",
+        content: "",
+        coverImage: "",
+        bannerImage: "",
         isPublished: false,
       });
       setShowModal(false);
-      
+
       // Refresh news list
       fetchNews();
     } catch (error) {
-      console.error('Failed to create news:', error);
-      alert('Failed to create news. Please try again.');
+      console.error("Failed to create news:", error);
+      alert("Failed to create news. Please try again.");
     } finally {
       setCreating(false);
     }
@@ -142,54 +145,59 @@ export default function NewsPage() {
     try {
       setShowEditModal(true);
       setEditingNews(item);
-      
+
       // Show loading state in form
       setEditFormData({
-        title: '',
-        slug: '',
-        summary: '',
-        content: '',
-        coverImage: '',
+        title: "",
+        slug: "",
+        summary: "",
+        content: "",
+        coverImage: "",
+        bannerImage: "",
         isPublished: false,
       });
-      
+
       // Fetch full news data from API
       const fullNewsData = await newsApi.getById(item.id);
-      
+
       if (fullNewsData) {
         setEditingNews(fullNewsData);
         setEditFormData({
-          title: fullNewsData.title || '',
-          slug: fullNewsData.slug || '',
-          summary: fullNewsData.summary || '',
-          content: fullNewsData.content || '',
-          coverImage: fullNewsData.coverImage || '',
+          title: fullNewsData.title || "",
+          slug: fullNewsData.slug || "",
+          summary: fullNewsData.summary || "",
+          content: fullNewsData.content || "",
+          coverImage: fullNewsData.coverImage || "",
+          bannerImage: fullNewsData.bannerImage || "",
           isPublished: fullNewsData.isPublished || false,
         });
       } else {
-        alert('Failed to load news data');
+        alert("Failed to load news data");
         setShowEditModal(false);
         setEditingNews(null);
       }
     } catch (error) {
-      console.error('Error fetching news data:', error);
-      alert('Failed to load news data');
+      console.error("Error fetching news data:", error);
+      alert("Failed to load news data");
       setShowEditModal(false);
       setEditingNews(null);
     }
   };
 
-  const handleEditInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleEditInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) => {
     const { name, value, type } = e.target;
-    setEditFormData(prev => ({
+    setEditFormData((prev) => ({
       ...prev,
-      [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : value
+      [name]:
+        type === "checkbox" ? (e.target as HTMLInputElement).checked : value,
     }));
   };
 
   const handleUpdate = async () => {
     if (!editingNews) return;
-    
+
     setUpdating(true);
     try {
       await newsApi.update(editingNews.id, {
@@ -199,14 +207,14 @@ export default function NewsPage() {
         coverImage: editFormData.coverImage || undefined,
         isPublished: editFormData.isPublished,
       });
-      
+
       // Close modal and refresh
       setShowEditModal(false);
       setEditingNews(null);
       fetchNews();
     } catch (error) {
-      console.error('Failed to update news:', error);
-      alert('Failed to update news. Please try again.');
+      console.error("Failed to update news:", error);
+      alert("Failed to update news. Please try again.");
     } finally {
       setUpdating(false);
     }
@@ -216,25 +224,25 @@ export default function NewsPage() {
     try {
       setShowPreviewModal(true);
       setPreviewNews(null); // Clear previous preview
-      
+
       // Fetch full news data from API
       const fullNewsData = await newsApi.getById(item.id);
-      
+
       if (fullNewsData) {
         setPreviewNews(fullNewsData);
       } else {
-        alert('Failed to load news preview');
+        alert("Failed to load news preview");
         setShowPreviewModal(false);
       }
     } catch (error) {
-      console.error('Error fetching news preview:', error);
-      alert('Failed to load news preview');
+      console.error("Error fetching news preview:", error);
+      alert("Failed to load news preview");
       setShowPreviewModal(false);
     }
   };
 
   const insertFormatting = (tag: string, isCreateModal = false) => {
-    const textareaId = isCreateModal ? 'create-content' : 'edit-content';
+    const textareaId = isCreateModal ? "create-content" : "edit-content";
     const textarea = document.getElementById(textareaId) as HTMLTextAreaElement;
     if (!textarea) return;
 
@@ -242,45 +250,45 @@ export default function NewsPage() {
     const start = textarea.selectionStart;
     const end = textarea.selectionEnd;
     const selectedText = currentFormData.content.substring(start, end);
-    
-    let formattedText = '';
+
+    let formattedText = "";
     switch (tag) {
-      case 'bold':
+      case "bold":
         formattedText = `**${selectedText}**`;
         break;
-      case 'italic':
+      case "italic":
         formattedText = `*${selectedText}*`;
         break;
-      case 'h1':
+      case "h1":
         formattedText = `# ${selectedText}`;
         break;
-      case 'h2':
+      case "h2":
         formattedText = `## ${selectedText}`;
         break;
-      case 'h3':
+      case "h3":
         formattedText = `### ${selectedText}`;
         break;
-      case 'link':
+      case "link":
         formattedText = `[${selectedText}](url)`;
         break;
-      case 'list':
+      case "list":
         formattedText = `- ${selectedText}`;
         break;
       default:
         formattedText = selectedText;
     }
 
-    const newContent = 
-      currentFormData.content.substring(0, start) + 
-      formattedText + 
+    const newContent =
+      currentFormData.content.substring(0, start) +
+      formattedText +
       currentFormData.content.substring(end);
-    
+
     if (isCreateModal) {
-      setFormData(prev => ({ ...prev, content: newContent }));
+      setFormData((prev) => ({ ...prev, content: newContent }));
     } else {
-      setEditFormData(prev => ({ ...prev, content: newContent }));
+      setEditFormData((prev) => ({ ...prev, content: newContent }));
     }
-    
+
     // Restore focus and selection
     setTimeout(() => {
       textarea.focus();
@@ -291,27 +299,42 @@ export default function NewsPage() {
   const renderMarkdown = (content: string) => {
     // Simple markdown rendering
     let html = content;
-    
+
     // Headers
-    html = html.replace(/^### (.*$)/gim, '<h3 class="text-xl font-bold text-gray-900 mb-3 mt-6">$1</h3>');
-    html = html.replace(/^## (.*$)/gim, '<h2 class="text-2xl font-bold text-gray-900 mb-4 mt-6">$1</h2>');
-    html = html.replace(/^# (.*$)/gim, '<h1 class="text-3xl font-bold text-gray-900 mb-4 mt-6">$1</h1>');
-    
+    html = html.replace(
+      /^### (.*$)/gim,
+      '<h3 class="text-xl font-bold text-gray-900 mb-3 mt-6">$1</h3>',
+    );
+    html = html.replace(
+      /^## (.*$)/gim,
+      '<h2 class="text-2xl font-bold text-gray-900 mb-4 mt-6">$1</h2>',
+    );
+    html = html.replace(
+      /^# (.*$)/gim,
+      '<h1 class="text-3xl font-bold text-gray-900 mb-4 mt-6">$1</h1>',
+    );
+
     // Bold
-    html = html.replace(/\*\*(.+?)\*\*/g, '<strong class="font-semibold">$1</strong>');
-    
+    html = html.replace(
+      /\*\*(.+?)\*\*/g,
+      '<strong class="font-semibold">$1</strong>',
+    );
+
     // Italic
     html = html.replace(/\*(.+?)\*/g, '<em class="italic">$1</em>');
-    
+
     // Links
-    html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" class="text-blue-600 hover:underline" target="_blank" rel="noopener noreferrer">$1</a>');
-    
+    html = html.replace(
+      /\[([^\]]+)\]\(([^)]+)\)/g,
+      '<a href="$2" class="text-blue-600 hover:underline" target="_blank" rel="noopener noreferrer">$1</a>',
+    );
+
     // Lists
     html = html.replace(/^- (.+)$/gim, '<li class="ml-4">• $1</li>');
-    
+
     // Line breaks
-    html = html.replace(/\n/g, '<br />');
-    
+    html = html.replace(/\n/g, "<br />");
+
     return html;
   };
 
@@ -331,16 +354,18 @@ export default function NewsPage() {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="flex  sm:items-center justify-between gap-4 mb-6">
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900">News and Events</h1>
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900">
+            News and Events
+          </h1>
           <div className="flex items-center gap-3">
-            <button 
+            <button
               onClick={fetchNews}
               className="px-4 py-2 text-gray-600 hover:text-gray-900 transition-colors text-sm"
             >
               <span className="mr-2 text-xl">↻</span>
               <span className="hidden sm:inline">Refresh</span>
             </button>
-            <button 
+            <button
               onClick={() => setShowModal(true)}
               className="flex items-center gap-2 px-4 sm:px-5 py-2.5 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-all font-medium text-sm"
             >
@@ -366,7 +391,7 @@ export default function NewsPage() {
             </span>
             {searchQuery && (
               <button
-                onClick={() => setSearchQuery('')}
+                onClick={() => setSearchQuery("")}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
               >
                 ×
@@ -377,31 +402,31 @@ export default function NewsPage() {
           {/* Filter Buttons */}
           <div className="flex items-center gap-2 bg-gray-100 rounded-lg p-1">
             <button
-              onClick={() => setFilterStatus('all')}
+              onClick={() => setFilterStatus("all")}
               className={`flex-1 sm:flex-none px-4 py-2 rounded-md text-sm font-medium transition-all ${
-                filterStatus === 'all'
-                  ? 'bg-white text-gray-900 shadow-sm'
-                  : 'text-gray-600 hover:text-gray-900'
+                filterStatus === "all"
+                  ? "bg-white text-gray-900 shadow-sm"
+                  : "text-gray-600 hover:text-gray-900"
               }`}
             >
               All
             </button>
             <button
-              onClick={() => setFilterStatus('published')}
+              onClick={() => setFilterStatus("published")}
               className={`flex-1 sm:flex-none px-4 py-2 rounded-md text-sm font-medium transition-all ${
-                filterStatus === 'published'
-                  ? 'bg-white text-gray-900 shadow-sm'
-                  : 'text-gray-600 hover:text-gray-900'
+                filterStatus === "published"
+                  ? "bg-white text-gray-900 shadow-sm"
+                  : "text-gray-600 hover:text-gray-900"
               }`}
             >
               Published
             </button>
             <button
-              onClick={() => setFilterStatus('draft')}
+              onClick={() => setFilterStatus("draft")}
               className={`flex-1 sm:flex-none px-4 py-2 rounded-md text-sm font-medium transition-all ${
-                filterStatus === 'draft'
-                  ? 'bg-white text-gray-900 shadow-sm'
-                  : 'text-gray-600 hover:text-gray-900'
+                filterStatus === "draft"
+                  ? "bg-white text-gray-900 shadow-sm"
+                  : "text-gray-600 hover:text-gray-900"
               }`}
             >
               Drafts
@@ -419,21 +444,32 @@ export default function NewsPage() {
           <table className="w-full">
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Cover</th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Title</th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Status</th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Actions</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                  Cover
+                </th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                  Title
+                </th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                  Status
+                </th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                  Actions
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
               {filteredNews && filteredNews.length > 0 ? (
                 filteredNews.map((item) => (
-                  <tr key={item.id} className="hover:bg-gray-50 transition-colors">
+                  <tr
+                    key={item.id}
+                    className="hover:bg-gray-50 transition-colors"
+                  >
                     <td className="px-6 py-4">
                       {item.coverImage ? (
                         <div className="w-16 h-16 rounded-lg overflow-hidden bg-gray-100 border border-gray-200">
-                          <Image 
-                            src={item.coverImage} 
+                          <Image
+                            src={item.coverImage}
                             alt={item.title}
                             width={64}
                             height={64}
@@ -442,51 +478,71 @@ export default function NewsPage() {
                         </div>
                       ) : (
                         <div className="w-16 h-16 rounded-lg bg-gray-100 border border-gray-200 flex items-center justify-center">
-                          <span className="text-gray-400 text-xs">No image</span>
+                          <span className="text-gray-400 text-xs">
+                            No image
+                          </span>
                         </div>
                       )}
                     </td>
                     <td className="px-6 py-4">
-                      <div className="text-sm font-medium text-gray-900">{item.title}</div>
+                      <div className="text-sm font-medium text-gray-900">
+                        {item.title}
+                      </div>
                       {item.summary && (
-                        <div className="text-xs text-gray-500 mt-1 line-clamp-2">{item.summary}</div>
+                        <div className="text-xs text-gray-500 mt-1 line-clamp-2">
+                          {item.summary}
+                        </div>
                       )}
                     </td>
                     <td className="px-6 py-4">
                       <button
-                        onClick={() => togglePublish(item.id, item.isPublished || false)}
+                        onClick={() =>
+                          togglePublish(item.id, item.isPublished || false)
+                        }
                         className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer ${
                           item.isPublished
-                            ? 'text-green-700 bg-green-50 border border-green-200 hover:bg-green-100'
-                            : 'text-gray-600 bg-gray-100 border border-gray-200 hover:bg-gray-200'
+                            ? "text-green-700 bg-green-50 border border-green-200 hover:bg-green-100"
+                            : "text-gray-600 bg-gray-100 border border-gray-200 hover:bg-gray-200"
                         }`}
                       >
                         <span
                           className={`w-1.5 h-1.5 rounded-full ${
-                            item.isPublished ? 'bg-green-500' : 'bg-gray-400'
+                            item.isPublished ? "bg-green-500" : "bg-gray-400"
                           }`}
                         />
-                        {item.isPublished ? 'Published' : 'Draft'}
+                        {item.isPublished ? "Published" : "Draft"}
                       </button>
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2">
-                        <button 
+                        <button
                           onClick={() => handlePreview(item)}
                           className="p-2 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer"
                           title="Preview"
                         >
-                          <Image src="/view.png" alt="View" width={18} height={18} className="opacity-60 hover:opacity-100 transition-opacity" />
+                          <Image
+                            src="/view.png"
+                            alt="View"
+                            width={18}
+                            height={18}
+                            className="opacity-60 hover:opacity-100 transition-opacity"
+                          />
                         </button>
-                        <button 
+                        <button
                           onClick={() => handleEdit(item)}
                           className="p-2 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer"
                           title="Edit"
                         >
-                          <Image src="/edit.png" alt="Edit" width={18} height={18} className="opacity-60 hover:opacity-100 transition-opacity" />
+                          <Image
+                            src="/edit.png"
+                            alt="Edit"
+                            width={18}
+                            height={18}
+                            className="opacity-60 hover:opacity-100 transition-opacity"
+                          />
                         </button>
                         {item.isPublished ? (
-                          <button 
+                          <button
                             onClick={() => togglePublish(item.id, true)}
                             className="px-3 py-1.5 text-xs font-medium text-red-700 bg-red-50 hover:bg-red-100 border border-red-200 rounded-lg transition-colors cursor-pointer"
                             title="Unpublish"
@@ -494,7 +550,7 @@ export default function NewsPage() {
                             Unpublish
                           </button>
                         ) : (
-                          <button 
+                          <button
                             onClick={() => togglePublish(item.id, false)}
                             className="px-3 py-1.5 text-xs font-medium text-green-700 bg-green-50 hover:bg-green-100 border border-green-200 rounded-lg transition-colors"
                             title="Publish"
@@ -508,20 +564,22 @@ export default function NewsPage() {
                 ))
               ) : (
                 <tr>
-                  <td colSpan={4} className="px-6 py-16 text-center text-gray-500">
+                  <td
+                    colSpan={4}
+                    className="px-6 py-16 text-center text-gray-500"
+                  >
                     <div className="flex flex-col items-center gap-2">
                       <div className="text-4xl mb-2">📰</div>
                       <div>
-                        {searchQuery || filterStatus !== 'all' 
-                          ? 'No articles match your search or filter'
-                          : 'No news found'
-                        }
+                        {searchQuery || filterStatus !== "all"
+                          ? "No articles match your search or filter"
+                          : "No news found"}
                       </div>
-                      {(searchQuery || filterStatus !== 'all') && (
+                      {(searchQuery || filterStatus !== "all") && (
                         <button
                           onClick={() => {
-                            setSearchQuery('');
-                            setFilterStatus('all');
+                            setSearchQuery("");
+                            setFilterStatus("all");
                           }}
                           className="mt-2 text-sm text-gray-600 hover:text-gray-900 underline"
                         >
@@ -540,13 +598,16 @@ export default function NewsPage() {
         <div className="lg:hidden space-y-4">
           {filteredNews && filteredNews.length > 0 ? (
             filteredNews.map((item) => (
-              <div key={item.id} className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
+              <div
+                key={item.id}
+                className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm"
+              >
                 {/* Card Header with Image */}
                 <div className="flex gap-4 p-4">
                   {item.coverImage ? (
                     <div className="w-20 h-20 flex-shrink-0 rounded-lg overflow-hidden bg-gray-100 border border-gray-200">
-                      <Image 
-                        src={item.coverImage} 
+                      <Image
+                        src={item.coverImage}
                         alt={item.title}
                         width={80}
                         height={80}
@@ -558,11 +619,15 @@ export default function NewsPage() {
                       <span className="text-gray-400 text-xs">No image</span>
                     </div>
                   )}
-                  
+
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-medium text-gray-900 text-sm mb-1 line-clamp-2">{item.title}</h3>
+                    <h3 className="font-medium text-gray-900 text-sm mb-1 line-clamp-2">
+                      {item.title}
+                    </h3>
                     {item.summary && (
-                      <p className="text-xs text-gray-500 line-clamp-2">{item.summary}</p>
+                      <p className="text-xs text-gray-500 line-clamp-2">
+                        {item.summary}
+                      </p>
                     )}
                   </div>
                 </div>
@@ -570,35 +635,49 @@ export default function NewsPage() {
                 {/* Card Footer */}
                 <div className="px-4 pb-4 flex items-center justify-between gap-3">
                   <button
-                    onClick={() => togglePublish(item.id, item.isPublished || false)}
+                    onClick={() =>
+                      togglePublish(item.id, item.isPublished || false)
+                    }
                     className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer ${
                       item.isPublished
-                        ? 'text-green-700 bg-green-50 border border-green-200'
-                        : 'text-gray-600 bg-gray-100 border border-gray-200'
+                        ? "text-green-700 bg-green-50 border border-green-200"
+                        : "text-gray-600 bg-gray-100 border border-gray-200"
                     }`}
                   >
                     <span
                       className={`w-1.5 h-1.5 rounded-full ${
-                        item.isPublished ? 'bg-green-500' : 'bg-gray-400'
+                        item.isPublished ? "bg-green-500" : "bg-gray-400"
                       }`}
                     />
-                    {item.isPublished ? 'Published' : 'Draft'}
+                    {item.isPublished ? "Published" : "Draft"}
                   </button>
-                  
+
                   <div className="flex items-center gap-2">
-                    <button 
+                    <button
                       onClick={() => handlePreview(item)}
                       className="p-2 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer"
                       title="Preview"
                     >
-                      <Image src="/view.png" alt="View" width={16} height={16} className="opacity-60" />
+                      <Image
+                        src="/view.png"
+                        alt="View"
+                        width={16}
+                        height={16}
+                        className="opacity-60"
+                      />
                     </button>
-                    <button 
+                    <button
                       onClick={() => handleEdit(item)}
                       className="p-2 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer"
                       title="Edit"
                     >
-                      <Image src="/edit.png" alt="Edit" width={16} height={16} className="opacity-60" />
+                      <Image
+                        src="/edit.png"
+                        alt="Edit"
+                        width={16}
+                        height={16}
+                        className="opacity-60"
+                      />
                     </button>
                   </div>
                 </div>
@@ -609,16 +688,15 @@ export default function NewsPage() {
               <div className="flex flex-col items-center gap-2">
                 <div className="text-4xl mb-2">📰</div>
                 <div>
-                  {searchQuery || filterStatus !== 'all' 
-                    ? 'No articles match your search or filter'
-                    : 'No news found'
-                  }
+                  {searchQuery || filterStatus !== "all"
+                    ? "No articles match your search or filter"
+                    : "No news found"}
                 </div>
-                {(searchQuery || filterStatus !== 'all') && (
+                {(searchQuery || filterStatus !== "all") && (
                   <button
                     onClick={() => {
-                      setSearchQuery('');
-                      setFilterStatus('all');
+                      setSearchQuery("");
+                      setFilterStatus("all");
                     }}
                     className="mt-2 text-sm text-gray-600 hover:text-gray-900 underline"
                   >
@@ -636,9 +714,11 @@ export default function NewsPage() {
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl border border-gray-200 shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
             <div className="p-4 sm:p-6 border-b border-gray-200 sticky top-0 bg-white z-10">
-              <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Create New Article</h2>
+              <h2 className="text-xl sm:text-2xl font-bold text-gray-900">
+                Create New Article
+              </h2>
             </div>
-            
+
             <div className="p-4 sm:p-6 space-y-4 sm:space-y-5">
               {/* Title */}
               <div>
@@ -691,12 +771,12 @@ export default function NewsPage() {
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Content <span className="text-red-500">*</span>
                 </label>
-                
+
                 {/* Formatting Toolbar */}
                 <div className="flex flex-wrap items-center gap-1 p-2 bg-gray-50 border border-gray-300 rounded-t-lg">
                   <button
                     type="button"
-                    onClick={() => insertFormatting('bold', true)}
+                    onClick={() => insertFormatting("bold", true)}
                     className="px-2 sm:px-3 py-1.5 text-sm font-bold hover:bg-gray-200 rounded transition-colors text-gray-900"
                     title="Bold"
                   >
@@ -704,7 +784,7 @@ export default function NewsPage() {
                   </button>
                   <button
                     type="button"
-                    onClick={() => insertFormatting('italic', true)}
+                    onClick={() => insertFormatting("italic", true)}
                     className="px-2 sm:px-3 py-1.5 text-sm italic hover:bg-gray-200 rounded transition-colors text-gray-900"
                     title="Italic"
                   >
@@ -713,7 +793,7 @@ export default function NewsPage() {
                   <div className="w-px h-6 bg-gray-300 mx-1" />
                   <button
                     type="button"
-                    onClick={() => insertFormatting('h1', true)}
+                    onClick={() => insertFormatting("h1", true)}
                     className="px-2 sm:px-3 py-1.5 text-xs sm:text-sm font-bold hover:bg-gray-200 rounded transition-colors text-gray-900"
                     title="Heading 1"
                   >
@@ -721,7 +801,7 @@ export default function NewsPage() {
                   </button>
                   <button
                     type="button"
-                    onClick={() => insertFormatting('h2', true)}
+                    onClick={() => insertFormatting("h2", true)}
                     className="px-2 sm:px-3 py-1.5 text-xs sm:text-sm font-bold hover:bg-gray-200 rounded transition-colors text-gray-900"
                     title="Heading 2"
                   >
@@ -729,7 +809,7 @@ export default function NewsPage() {
                   </button>
                   <button
                     type="button"
-                    onClick={() => insertFormatting('h3', true)}
+                    onClick={() => insertFormatting("h3", true)}
                     className="px-2 sm:px-3 py-1.5 text-xs sm:text-sm font-bold hover:bg-gray-200 rounded transition-colors text-gray-900"
                     title="Heading 3"
                   >
@@ -738,7 +818,7 @@ export default function NewsPage() {
                   <div className="w-px h-6 bg-gray-300 mx-1" />
                   <button
                     type="button"
-                    onClick={() => insertFormatting('link', true)}
+                    onClick={() => insertFormatting("link", true)}
                     className="px-2 sm:px-3 py-1.5 text-sm hover:bg-gray-200 rounded transition-colors text-gray-900"
                     title="Link"
                   >
@@ -746,14 +826,14 @@ export default function NewsPage() {
                   </button>
                   <button
                     type="button"
-                    onClick={() => insertFormatting('list', true)}
+                    onClick={() => insertFormatting("list", true)}
                     className="px-2 sm:px-3 py-1.5 text-sm hover:bg-gray-200 rounded transition-colors text-gray-900"
                     title="List"
                   >
                     •
                   </button>
                 </div>
-                
+
                 <textarea
                   id="create-content"
                   name="content"
@@ -765,7 +845,8 @@ export default function NewsPage() {
                   required
                 />
                 <p className="mt-2 text-xs text-gray-500">
-                  Tip: Select text and use toolbar buttons to format. Supports Markdown syntax.
+                  Tip: Select text and use toolbar buttons to format. Supports
+                  Markdown syntax.
                 </p>
               </div>
 
@@ -784,6 +865,21 @@ export default function NewsPage() {
                 />
               </div>
 
+              {/* Banner Image */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Banner Image URL
+                </label>
+                <input
+                  type="text"
+                  name="bannerImage"
+                  value={formData.bannerImage}
+                  onChange={handleInputChange}
+                  className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent placeholder:text-gray-400 text-gray-900 transition-all"
+                  placeholder="https://example.com/banner.jpg"
+                />
+              </div>
+
               {/* Is Published */}
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2">
                 <div className="flex items-center gap-3">
@@ -795,31 +891,38 @@ export default function NewsPage() {
                     onChange={handleInputChange}
                     className="w-4 h-4 bg-white border-gray-300 rounded text-gray-900 focus:ring-2 focus:ring-gray-900 focus:ring-offset-0"
                   />
-                  <label htmlFor="create-publish" className="text-sm font-medium text-gray-700 cursor-pointer">
+                  <label
+                    htmlFor="create-publish"
+                    className="text-sm font-medium text-gray-700 cursor-pointer"
+                  >
                     Publish immediately
                   </label>
                 </div>
-                
+
                 {/* Quick Toggle Buttons */}
                 <div className="flex items-center gap-2">
                   <button
                     type="button"
-                    onClick={() => setFormData(prev => ({ ...prev, isPublished: false }))}
+                    onClick={() =>
+                      setFormData((prev) => ({ ...prev, isPublished: false }))
+                    }
                     className={`flex-1 sm:flex-none px-3 py-1.5 text-xs font-medium rounded-lg transition-all ${
                       !formData.isPublished
-                        ? 'text-gray-700 bg-gray-100 border border-gray-300'
-                        : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                        ? "text-gray-700 bg-gray-100 border border-gray-300"
+                        : "text-gray-500 hover:text-gray-700 hover:bg-gray-50"
                     }`}
                   >
                     Save as Draft
                   </button>
                   <button
                     type="button"
-                    onClick={() => setFormData(prev => ({ ...prev, isPublished: true }))}
+                    onClick={() =>
+                      setFormData((prev) => ({ ...prev, isPublished: true }))
+                    }
                     className={`flex-1 sm:flex-none px-3 py-1.5 text-xs font-medium rounded-lg transition-all ${
                       formData.isPublished
-                        ? 'text-green-700 bg-green-50 border border-green-200'
-                        : 'text-gray-500 hover:text-green-700 hover:bg-green-50'
+                        ? "text-green-700 bg-green-50 border border-green-200"
+                        : "text-gray-500 hover:text-green-700 hover:bg-green-50"
                     }`}
                   >
                     Publish Now
@@ -841,7 +944,7 @@ export default function NewsPage() {
                 disabled={creating || !formData.title || !formData.content}
                 className="px-4 sm:px-5 py-2.5 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-all disabled:bg-gray-300 disabled:text-gray-500 disabled:cursor-not-allowed text-sm font-medium"
               >
-                {creating ? 'Creating...' : 'Create'}
+                {creating ? "Creating..." : "Create"}
               </button>
             </div>
           </div>
@@ -853,13 +956,17 @@ export default function NewsPage() {
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl border border-gray-200 shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
             <div className="p-4 sm:p-6 border-b border-gray-200 sticky top-0 bg-white z-10">
-              <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Edit Article</h2>
+              <h2 className="text-xl sm:text-2xl font-bold text-gray-900">
+                Edit Article
+              </h2>
             </div>
-            
+
             {!editFormData.title && !editFormData.content ? (
               <div className="p-16 flex flex-col items-center justify-center">
                 <div className="w-8 h-8 border-2 border-gray-200 border-t-gray-900 rounded-full animate-spin mb-4" />
-                <div className="text-gray-600 text-sm">Loading article data...</div>
+                <div className="text-gray-600 text-sm">
+                  Loading article data...
+                </div>
               </div>
             ) : (
               <>
@@ -915,12 +1022,12 @@ export default function NewsPage() {
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Content <span className="text-red-500">*</span>
                     </label>
-                    
+
                     {/* Formatting Toolbar */}
                     <div className="flex flex-wrap items-center gap-1 p-2 bg-gray-50 border border-gray-300 rounded-t-lg">
                       <button
                         type="button"
-                        onClick={() => insertFormatting('bold', false)}
+                        onClick={() => insertFormatting("bold", false)}
                         className="px-2 sm:px-3 py-1.5 text-sm font-bold hover:bg-gray-200 rounded transition-colors text-gray-900"
                         title="Bold"
                       >
@@ -928,7 +1035,7 @@ export default function NewsPage() {
                       </button>
                       <button
                         type="button"
-                        onClick={() => insertFormatting('italic', false)}
+                        onClick={() => insertFormatting("italic", false)}
                         className="px-2 sm:px-3 py-1.5 text-sm italic hover:bg-gray-200 rounded transition-colors text-gray-900"
                         title="Italic"
                       >
@@ -937,7 +1044,7 @@ export default function NewsPage() {
                       <div className="w-px h-6 bg-gray-300 mx-1" />
                       <button
                         type="button"
-                        onClick={() => insertFormatting('h1', false)}
+                        onClick={() => insertFormatting("h1", false)}
                         className="px-2 sm:px-3 py-1.5 text-xs sm:text-sm font-bold hover:bg-gray-200 rounded transition-colors text-gray-900"
                         title="Heading 1"
                       >
@@ -945,7 +1052,7 @@ export default function NewsPage() {
                       </button>
                       <button
                         type="button"
-                        onClick={() => insertFormatting('h2', false)}
+                        onClick={() => insertFormatting("h2", false)}
                         className="px-2 sm:px-3 py-1.5 text-xs sm:text-sm font-bold hover:bg-gray-200 rounded transition-colors text-gray-900"
                         title="Heading 2"
                       >
@@ -953,7 +1060,7 @@ export default function NewsPage() {
                       </button>
                       <button
                         type="button"
-                        onClick={() => insertFormatting('h3', false)}
+                        onClick={() => insertFormatting("h3", false)}
                         className="px-2 sm:px-3 py-1.5 text-xs sm:text-sm font-bold hover:bg-gray-200 rounded transition-colors text-gray-900"
                         title="Heading 3"
                       >
@@ -962,7 +1069,7 @@ export default function NewsPage() {
                       <div className="w-px h-6 bg-gray-300 mx-1" />
                       <button
                         type="button"
-                        onClick={() => insertFormatting('link', false)}
+                        onClick={() => insertFormatting("link", false)}
                         className="px-2 sm:px-3 py-1.5 text-sm hover:bg-gray-200 rounded transition-colors text-gray-900"
                         title="Link"
                       >
@@ -970,14 +1077,14 @@ export default function NewsPage() {
                       </button>
                       <button
                         type="button"
-                        onClick={() => insertFormatting('list', false)}
+                        onClick={() => insertFormatting("list", false)}
                         className="px-2 sm:px-3 py-1.5 text-sm hover:bg-gray-200 rounded transition-colors text-gray-900"
                         title="List"
                       >
                         •
                       </button>
                     </div>
-                    
+
                     <textarea
                       id="edit-content"
                       name="content"
@@ -989,7 +1096,8 @@ export default function NewsPage() {
                       required
                     />
                     <p className="mt-2 text-xs text-gray-500">
-                      Tip: Select text and use toolbar buttons to format. Supports Markdown syntax.
+                      Tip: Select text and use toolbar buttons to format.
+                      Supports Markdown syntax.
                     </p>
                   </div>
 
@@ -1008,6 +1116,21 @@ export default function NewsPage() {
                     />
                   </div>
 
+                  {/* Banner Image */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Banner Image URL
+                    </label>
+                    <input
+                      type="text"
+                      name="bannerImage"
+                      value={editFormData.bannerImage}
+                      onChange={handleEditInputChange}
+                      className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent placeholder:text-gray-400 text-gray-900 transition-all"
+                      placeholder="https://example.com/banner.jpg"
+                    />
+                  </div>
+
                   {/* Is Published */}
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2">
                     <div className="flex items-center gap-3">
@@ -1019,31 +1142,44 @@ export default function NewsPage() {
                         onChange={handleEditInputChange}
                         className="w-4 h-4 bg-white border-gray-300 rounded text-gray-900 focus:ring-2 focus:ring-gray-900 focus:ring-offset-0"
                       />
-                      <label htmlFor="edit-publish" className="text-sm font-medium text-gray-700 cursor-pointer">
+                      <label
+                        htmlFor="edit-publish"
+                        className="text-sm font-medium text-gray-700 cursor-pointer"
+                      >
                         Published
                       </label>
                     </div>
-                    
+
                     {/* Quick Toggle Buttons */}
                     <div className="flex items-center gap-2">
                       <button
                         type="button"
-                        onClick={() => setEditFormData(prev => ({ ...prev, isPublished: false }))}
+                        onClick={() =>
+                          setEditFormData((prev) => ({
+                            ...prev,
+                            isPublished: false,
+                          }))
+                        }
                         className={`flex-1 sm:flex-none px-3 py-1.5 text-xs font-medium rounded-lg transition-all ${
                           !editFormData.isPublished
-                            ? 'text-gray-700 bg-gray-100 border border-gray-300'
-                            : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                            ? "text-gray-700 bg-gray-100 border border-gray-300"
+                            : "text-gray-500 hover:text-gray-700 hover:bg-gray-50"
                         }`}
                       >
                         Set as Draft
                       </button>
                       <button
                         type="button"
-                        onClick={() => setEditFormData(prev => ({ ...prev, isPublished: true }))}
+                        onClick={() =>
+                          setEditFormData((prev) => ({
+                            ...prev,
+                            isPublished: true,
+                          }))
+                        }
                         className={`flex-1 sm:flex-none px-3 py-1.5 text-xs font-medium rounded-lg transition-all ${
                           editFormData.isPublished
-                            ? 'text-green-700 bg-green-50 border border-green-200'
-                            : 'text-gray-500 hover:text-green-700 hover:bg-green-50'
+                            ? "text-green-700 bg-green-50 border border-green-200"
+                            : "text-gray-500 hover:text-green-700 hover:bg-green-50"
                         }`}
                       >
                         Set as Published
@@ -1065,10 +1201,12 @@ export default function NewsPage() {
                   </button>
                   <button
                     onClick={handleUpdate}
-                    disabled={updating || !editFormData.title || !editFormData.content}
+                    disabled={
+                      updating || !editFormData.title || !editFormData.content
+                    }
                     className="px-4 sm:px-5 py-2.5 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-all disabled:bg-gray-300 disabled:text-gray-500 disabled:cursor-not-allowed text-sm font-medium cursor-pointer"
                   >
-                    {updating ? 'Updating...' : 'Update'}
+                    {updating ? "Updating..." : "Update"}
                   </button>
                 </div>
               </>
@@ -1082,7 +1220,9 @@ export default function NewsPage() {
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl border border-gray-200 shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
             <div className="sticky top-0 bg-white p-4 sm:p-6 border-b border-gray-200 flex items-center justify-between z-10">
-              <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Preview</h2>
+              <h2 className="text-xl sm:text-2xl font-bold text-gray-900">
+                Preview
+              </h2>
               <button
                 onClick={() => {
                   setShowPreviewModal(false);
@@ -1093,7 +1233,7 @@ export default function NewsPage() {
                 <span className="text-2xl text-gray-500">×</span>
               </button>
             </div>
-            
+
             {!previewNews ? (
               <div className="p-16 flex flex-col items-center justify-center">
                 <div className="w-8 h-8 border-2 border-gray-200 border-t-gray-900 rounded-full animate-spin mb-4" />
@@ -1104,8 +1244,8 @@ export default function NewsPage() {
                 {/* Cover Image */}
                 {previewNews.coverImage && (
                   <div className="mb-6 sm:mb-8 rounded-xl overflow-hidden">
-                    <Image 
-                      src={previewNews.coverImage} 
+                    <Image
+                      src={previewNews.coverImage}
                       alt={previewNews.title}
                       width={800}
                       height={400}
@@ -1119,18 +1259,30 @@ export default function NewsPage() {
                   <span
                     className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium ${
                       previewNews.isPublished
-                        ? 'text-green-700 bg-green-50 border border-green-200'
-                        : 'text-gray-600 bg-gray-100 border border-gray-200'
+                        ? "text-green-700 bg-green-50 border border-green-200"
+                        : "text-gray-600 bg-gray-100 border border-gray-200"
                     }`}
                   >
                     <span
                       className={`w-1.5 h-1.5 rounded-full ${
-                        previewNews.isPublished ? 'bg-green-500' : 'bg-gray-400'
+                        previewNews.isPublished ? "bg-green-500" : "bg-gray-400"
                       }`}
                     />
-                    {previewNews.isPublished ? 'Published' : 'Draft'}
+                    {previewNews.isPublished ? "Published" : "Draft"}
                   </span>
                 </div>
+
+                {previewNews.bannerImage && (
+                  <div className="mb-6 sm:mb-8 rounded-xl overflow-hidden">
+                    <Image
+                      src={previewNews.bannerImage}
+                      alt="Banner"
+                      width={1200}
+                      height={500}
+                      className="w-full h-auto object-cover"
+                    />
+                  </div>
+                )}
 
                 {/* Title */}
                 <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
@@ -1140,7 +1292,8 @@ export default function NewsPage() {
                 {/* Slug */}
                 {previewNews.slug && (
                   <div className="text-sm text-gray-500 mb-4">
-                    <span className="font-medium">Slug:</span> {previewNews.slug}
+                    <span className="font-medium">Slug:</span>{" "}
+                    {previewNews.slug}
                   </div>
                 )}
 
@@ -1152,40 +1305,49 @@ export default function NewsPage() {
                 )}
 
                 {/* Content */}
-                <div 
+                <div
                   className="prose prose-sm sm:prose-base prose-gray max-w-none leading-relaxed"
-                  dangerouslySetInnerHTML={{ __html: renderMarkdown(previewNews.content || '') }}
+                  dangerouslySetInnerHTML={{
+                    __html: renderMarkdown(previewNews.content || ""),
+                  }}
                 />
 
                 {/* Metadata */}
                 <div className="mt-6 sm:mt-8 pt-6 border-t border-gray-200 space-y-2">
                   {previewNews.publishedAt && (
                     <div className="text-sm text-gray-500">
-                      <span className="font-medium">Published:</span>{' '}
-                      {new Date(previewNews.publishedAt).toLocaleDateString('en-US', { 
-                        year: 'numeric', 
-                        month: 'long', 
-                        day: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit'
-                      })}
+                      <span className="font-medium">Published:</span>{" "}
+                      {new Date(previewNews.publishedAt).toLocaleDateString(
+                        "en-US",
+                        {
+                          year: "numeric",
+                          month: "long",
+                          day: "numeric",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        },
+                      )}
                     </div>
                   )}
                   {previewNews.createdAt && (
                     <div className="text-sm text-gray-500">
-                      <span className="font-medium">Created:</span>{' '}
-                      {new Date(previewNews.createdAt).toLocaleDateString('en-US', { 
-                        year: 'numeric', 
-                        month: 'long', 
-                        day: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit'
-                      })}
+                      <span className="font-medium">Created:</span>{" "}
+                      {new Date(previewNews.createdAt).toLocaleDateString(
+                        "en-US",
+                        {
+                          year: "numeric",
+                          month: "long",
+                          day: "numeric",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        },
+                      )}
                     </div>
                   )}
                   {previewNews.author && (
                     <div className="text-sm text-gray-500">
-                      <span className="font-medium">Author:</span> {previewNews.author.email}
+                      <span className="font-medium">Author:</span>{" "}
+                      {previewNews.author.email}
                     </div>
                   )}
                 </div>
