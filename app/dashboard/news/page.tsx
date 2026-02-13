@@ -205,6 +205,7 @@ export default function NewsPage() {
         summary: editFormData.summary,
         content: editFormData.content,
         coverImage: editFormData.coverImage || undefined,
+        bannerImage: editFormData.bannerImage || undefined,
         isPublished: editFormData.isPublished,
       });
 
