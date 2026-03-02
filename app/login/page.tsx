@@ -1,31 +1,51 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import Image from 'next/image';
-import { Eye, EyeOff, Mail, Lock } from 'lucide-react';
-import { authApi } from '@/lib/api/auth';
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import Image from "next/image";
+import { Eye, EyeOff, Mail, Lock } from "lucide-react";
+import { authApi } from "@/lib/api/auth";
 
 export default function LoginPage() {
   const router = useRouter();
 
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    setError("");
     setLoading(true);
 
     try {
-      // Login (backend sets HTTP-only cookies)
       await authApi.login({ email, password });
-      router.push('/dashboard');
+      router.push("/dashboard");
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Invalid credentials');
+      console.log("Login error:", err); // 🔍 debug once
+
+      if (err.response) {
+        const data = err.response.data;
+
+        // If backend sends string message
+        if (typeof data?.message === "string") {
+          setError(data.message);
+        }
+        // If backend sends array (class-validator)
+        else if (Array.isArray(data?.message)) {
+          setError(data.message[0]);
+        }
+        // Fallback
+        else {
+          setError("Invalid email or password");
+        }
+      } else if (err.request) {
+        setError("Server not responding. Please try again.");
+      } else {
+        setError("Something went wrong. Please try again.");
+      }
     } finally {
       setLoading(false);
     }
@@ -65,9 +85,7 @@ export default function LoginPage() {
             <h2 className="text-3xl font-bold font-velcan text-gray-900 tracking-tight">
               Welcome back
             </h2>
-            <p className="mt-2 text-gray-500">
-              Sign in to Control Panel
-            </p>
+            <p className="mt-2 text-gray-500">Sign in to Control Panel</p>
           </div>
 
           {error && (
@@ -102,7 +120,7 @@ export default function LoginPage() {
               </label>
               <div className="relative">
                 <input
-                  type={showPassword ? 'text' : 'password'}
+                  type={showPassword ? "text" : "password"}
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -129,7 +147,7 @@ export default function LoginPage() {
               disabled={loading}
               className="w-full py-3 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-xl"
             >
-              {loading ? 'Signing in...' : 'Sign in'}
+              {loading ? "Signing in..." : "Sign in"}
             </button>
           </form>
         </div>

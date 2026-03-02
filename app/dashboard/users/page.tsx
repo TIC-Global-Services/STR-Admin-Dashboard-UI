@@ -21,6 +21,9 @@ import {
 
 interface User {
   id: string;
+  firstname: string;
+  lastname: string;
+  phone: string;
   email: string;
   roles: UserRole[];
   createdAt: string;
@@ -42,12 +45,17 @@ interface Role {
 }
 
 interface CreateUserDto {
+  firstname: string;
+  lastname: string;
+  phone: string;
   email: string;
   password: string;
   roleIds?: string[];
 }
 
 interface UpdateUserDto {
+  firstname?: string;
+  lastname?: string;
   password?: string;
   isActive?: boolean;
 }
@@ -70,12 +78,17 @@ export default function UsersManagement() {
 
   // Form states
   const [createForm, setCreateForm] = useState<CreateUserDto>({
+    firstname: '',
+    lastname: '',
+    phone:'',
     email: '',
     password: '',
     roleIds: [],
   });
 
   const [editForm, setEditForm] = useState<UpdateUserDto>({
+    firstname: '',
+    lastname: '',
     password: '',
     isActive: true,
   });
@@ -132,6 +145,9 @@ export default function UsersManagement() {
       const q = searchQuery.toLowerCase();
       result = result.filter((u) => {
         if (u.email.toLowerCase().includes(q)) return true;
+        if (u.firstname.toLowerCase().includes(q)) return true;
+        if (u.lastname.toLowerCase().includes(q)) return true;
+        if (u.phone.includes(q)) return true;
         return u.roles?.some((r) => {
           const name = r.role?.name || r.name;
           return name?.toLowerCase().includes(q);
@@ -162,7 +178,7 @@ export default function UsersManagement() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users'] });
       setShowCreateModal(false);
-      setCreateForm({ email: '', password: '', roleIds: [] });
+      setCreateForm({ firstname: '', lastname: '', phone:'', email: '', password: '', roleIds: [] });
     },
     onError: (err) => {
       console.error('Create user failed:', err);
@@ -207,10 +223,15 @@ export default function UsersManagement() {
   };
 
   const openEdit = (user: User) => {
-    setSelectedUser(user);
-    setEditForm({ password: '', isActive: user.isActive });
-    setShowEditModal(true);
-  };
+  setSelectedUser(user);
+  setEditForm({
+    firstname: user.firstname,
+    lastname: user.lastname,
+    password: '',
+    isActive: user.isActive,
+  });
+  setShowEditModal(true);
+};
 
   const openView = (user: User) => {
     setSelectedUser(user);
@@ -321,8 +342,11 @@ export default function UsersManagement() {
               <thead className="bg-gray-50">
                 <tr>
                   <th className="px-4 sm:px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                    User
+                    Name
                   </th>
+                  {/* <th className="px-4 sm:px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                    Email
+                  </th> */}
                   <th className="px-4 sm:px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                     Roles
                   </th>
@@ -341,16 +365,26 @@ export default function UsersManagement() {
                 {filteredUsers.length > 0 ? (
                   filteredUsers.map((user) => (
                     <tr key={user.id} className="hover:bg-gray-50 transition-colors">
+
                       <td className="px-4 sm:px-6 py-4">
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-700 font-medium text-sm shrink-0">
-                            {user.email.charAt(0).toUpperCase()}
+                            {user.firstname.charAt(0).toUpperCase()}
                           </div>
+                          <div className="min-w-0">
+                            <div className="text-sm font-medium text-gray-900 truncate">{user.firstname} {user.lastname}</div>
+                          </div>
+                        </div>
+                      </td>
+
+
+                      {/* <td className="px-4 sm:px-6 py-4">
+                        <div className="flex items-center gap-3">
                           <div className="min-w-0">
                             <div className="text-sm font-medium text-gray-900 truncate">{user.email}</div>
                           </div>
                         </div>
-                      </td>
+                      </td> */}
 
                       <td className="px-4 sm:px-6 py-4">
                         <div className="flex flex-wrap gap-1.5">
@@ -471,6 +505,45 @@ export default function UsersManagement() {
             <div className="p-6 space-y-5">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                  First Name <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={createForm.firstname}
+                  onChange={(e) => setCreateForm({ ...createForm, firstname: e.target.value })}
+                  required
+                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900"
+                  placeholder="John"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                  Last Name <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={createForm.lastname}
+                  onChange={(e) => setCreateForm({ ...createForm, lastname: e.target.value })}
+                  required
+                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900"
+                  placeholder="Doe"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                  Phone <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={createForm.phone}
+                  onChange={(e) => setCreateForm({ ...createForm, phone: e.target.value })}
+                  required
+                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900"
+                  placeholder="123-456-7890"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">
                   Email <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -528,7 +601,7 @@ export default function UsersManagement() {
               <button
                 onClick={() => {
                   setShowCreateModal(false);
-                  setCreateForm({ email: '', password: '', roleIds: [] });
+                  setCreateForm({ firstname: '', lastname: '', phone:'', email: '', password: '', roleIds: [] });
                 }}
                 className="px-5 py-2.5 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 text-sm font-medium"
                 disabled={createMutation.isPending}
@@ -555,6 +628,33 @@ export default function UsersManagement() {
               <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Edit User</h2>
             </div>
             <div className="p-6 space-y-5">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">First Name</label>
+                <input
+                  type="text"
+                  value={editForm.firstname || ''}
+                  onChange={(e)=> setEditForm({...editForm, firstname:e.target.value})}
+                  className="w-full px-4 py-2.5  border border-gray-300 rounded-lg text-gray-500 "
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">Last Name</label>
+                <input
+                        type="text"
+                        value={editForm.lastname || ''}
+                  onChange={(e)=> setEditForm({...editForm, lastname:e.target.value})}
+                  className="w-full px-4 py-2.5  border border-gray-300 rounded-lg text-gray-500 "
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">Phone</label>
+                <input
+                  type="text"
+                  value={selectedUser.phone}
+                  disabled
+                  className="w-full px-4 py-2.5 bg-gray-100 border border-gray-300 rounded-lg text-gray-500 cursor-not-allowed"
+                />
+              </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">Email</label>
                 <input
@@ -654,7 +754,8 @@ export default function UsersManagement() {
                   {selectedUser.email.charAt(0).toUpperCase()}
                 </div>
                 <div>
-                  <h3 className="text-lg sm:text-xl font-bold text-gray-900">{selectedUser.email}</h3>
+                  <h3 className="text-lg sm:text-xl font-bold text-gray-900">{selectedUser.firstname} {selectedUser.lastname}</h3>
+                  <p className="text-sm text-gray-500">{selectedUser.email}</p>
                   <span
                     className={`inline-flex items-center gap-2 px-3 py-1 mt-2 rounded-lg text-xs font-medium ${
                       selectedUser.isActive
@@ -693,8 +794,8 @@ export default function UsersManagement() {
 
               <div className="border-t pt-5 space-y-4 text-sm">
                 <div>
-                  <div className="text-xs text-gray-500 mb-1">User ID</div>
-                  <div className="font-mono text-gray-900">{selectedUser.id}</div>
+                  <div className="text-xs text-gray-500 mb-1">Phone Number</div>
+                  <div className="font-mono text-gray-900">{selectedUser.phone}</div>
                 </div>
                 <div>
                   <div className="text-xs text-gray-500 mb-1">Created</div>

@@ -2,6 +2,9 @@ import { apiClient } from "./client";
 
 export interface User {
   id: string;
+  firstname: string;
+  lastname: string;
+  phone: string;
   email: string;
   roles: UserRole[];
   createdAt: string;
@@ -28,12 +31,17 @@ export interface Role {
 }
 
 export interface CreateUserDto {
+  firstname: string;
+  lastname: string;
+  phone: string;
   email: string;
   password: string;
   roleIds?: string[];
 }
 
 export interface UpdateUserDto {
+  firstname?: string;
+  lastname?: string;
   password?: string;
   isActive?: boolean;
 }
@@ -42,6 +50,7 @@ export const usersApi = {
   // Get all users
   getAll: async (): Promise<User[]> => {
     const { data } = await apiClient.get("/users");
+    // console.log("Fetched users:", data);
     return data;
   },
 

@@ -73,23 +73,28 @@ apiClient.interceptors.response.use(
     }
 
     const status = error.response?.status;
+    const url = originalRequest.url || '';
 
     /**
-     * Conditions where we DO NOT attempt refresh:
-     * - Not 401
-     * - Already retried
-     * - Refresh endpoint itself
+     * 🚫 NEVER attempt refresh for auth endpoints
      */
     if (
-      status !== 401 ||
-      originalRequest._retry ||
-      originalRequest.url?.includes('/auth/refresh')
+      url.includes('/auth/login') ||
+      url.includes('/auth/refresh') ||
+      url.includes('/auth/logout')
     ) {
       return Promise.reject(error);
     }
 
     /**
-     * If refresh already happening → queue this request
+     * If not 401 or already retried → reject normally
+     */
+    if (status !== 401 || originalRequest._retry) {
+      return Promise.reject(error);
+    }
+
+    /**
+     * Queue requests while refresh is happening
      */
     if (isRefreshing) {
       return new Promise((resolve, reject) => {
@@ -101,9 +106,6 @@ apiClient.interceptors.response.use(
     isRefreshing = true;
 
     try {
-      /**
-       * Silent refresh (HTTP-only cookie)
-       */
       await refreshClient.post('/auth/refresh');
 
       processQueue(null);
@@ -113,7 +115,7 @@ apiClient.interceptors.response.use(
       processQueue(refreshError);
 
       /**
-       * If refresh fails → logout
+       * Only redirect for real auth failure (NOT login)
        */
       if (typeof window !== 'undefined') {
         window.location.href = '/login';
