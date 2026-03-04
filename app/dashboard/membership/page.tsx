@@ -1,57 +1,59 @@
-'use client';
+"use client";
 
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { membershipApi, type Membership } from '@/lib/api/membership';
-import { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { membershipApi, type Membership } from "@/lib/api/membership";
+import { useState } from "react";
 import { HiMiniUserGroup as MemberGroup } from "react-icons/hi2";
 import { LuTimer as Timer } from "react-icons/lu";
 import { RiVerifiedBadgeFill as Verified } from "react-icons/ri";
 import { MdCancel as Rejected } from "react-icons/md";
 
-
-
-
-
-type FilterType = 'all' | 'pending' | 'approved' | 'rejected';
+type FilterType = "all" | "pending" | "approved" | "rejected";
 
 export default function Memberships() {
   const queryClient = useQueryClient();
-  const [filter, setFilter] = useState<FilterType>('all');
+  const [filter, setFilter] = useState<FilterType>("all");
   const [selectedMember, setSelectedMember] = useState<Membership | null>(null);
   const [showRejectModal, setShowRejectModal] = useState(false);
-  const [rejectionReason, setRejectionReason] = useState('');
-  const [searchQuery, setSearchQuery] = useState('');
+  const [rejectionReason, setRejectionReason] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
 
   // Fetch ALL memberships for stats
-  const { data: allMemberships, isLoading, error, refetch } = useQuery({
-    queryKey: ['memberships', 'all'],
+  const {
+    data: allMemberships,
+    isLoading,
+    error,
+    refetch,
+  } = useQuery({
+    queryKey: ["memberships", "all"],
     queryFn: async () => await membershipApi.getAll(),
-    refetchOnMount: 'always',
+    refetchOnMount: "always",
     retry: 1,
   });
 
   // Filter memberships by status
   const filteredByStatus = allMemberships?.filter((member) => {
-    if (filter === 'all') return true;
+    if (filter === "all") return true;
     return member.status === filter.toUpperCase();
   });
 
   // Filter memberships based on search
-  const filteredMemberships = filteredByStatus?.filter((member) =>
-    member.fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    member.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    member.phone.includes(searchQuery)
+  const filteredMemberships = filteredByStatus?.filter(
+    (member) =>
+      member.fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      member.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      member.phone.includes(searchQuery),
   );
 
   // Approve mutation
   const approveMutation = useMutation({
     mutationFn: membershipApi.approve,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['memberships'] });
+      queryClient.invalidateQueries({ queryKey: ["memberships"] });
       setSelectedMember(null);
     },
     onError: (error: unknown) => {
-      console.error('Failed to approve membership:', error);
+      console.error("Failed to approve membership:", error);
     },
   });
 
@@ -60,15 +62,22 @@ export default function Memberships() {
     mutationFn: ({ id, reason }: { id: string; reason: string }) =>
       membershipApi.reject(id, reason),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['memberships'] });
+      queryClient.invalidateQueries({ queryKey: ["memberships"] });
       setSelectedMember(null);
       setShowRejectModal(false);
-      setRejectionReason('');
+      setRejectionReason("");
     },
     onError: (error: unknown) => {
-      console.error('Failed to reject membership:', error);
+      console.error("Failed to reject membership:", error);
     },
   });
+
+  const suspendMutation = useMutation({
+  mutationFn: (id: string) => membershipApi.suspend(id),
+  onSuccess: () => {
+    queryClient.invalidateQueries({ queryKey: ["memberships"] });
+  },
+});
 
   const handleApprove = (id: string) => {
     approveMutation.mutate(id);
@@ -91,37 +100,47 @@ export default function Memberships() {
   const getStatusConfig = (status: string) => {
     const configs = {
       PENDING: {
-        bg: 'bg-slate-100',
-        text: 'text-slate-700',
-        border: 'border-slate-300',
-        icon: '⏱️',
+        bg: "bg-slate-100",
+        text: "text-slate-700",
+        border: "border-slate-300",
+        icon: "⏱️",
       },
       APPROVED: {
-        bg: 'bg-emerald-50',
-        text: 'text-emerald-700',
-        border: 'border-emerald-200',
-        icon: '✓',
+        bg: "bg-emerald-50",
+        text: "text-emerald-700",
+        border: "border-emerald-200",
+        icon: "✓",
       },
       REJECTED: {
-        bg: 'bg-rose-50',
-        text: 'text-rose-700',
-        border: 'border-rose-200',
-        icon: '✕',
+        bg: "bg-rose-50",
+        text: "text-rose-700",
+        border: "border-rose-200",
+        icon: "✕",
+      },
+      SUSPENDED: {
+        bg: "bg-amber-50",
+        text: "text-amber-700",
+        border: "border-amber-200",
+        icon: "⛔",
       },
     };
-    return configs[status as keyof typeof configs] || {
-      bg: 'bg-gray-50',
-      text: 'text-gray-700',
-      border: 'border-gray-200',
-      icon: '•',
-    };
+    return (
+      configs[status as keyof typeof configs] || {
+        bg: "bg-gray-50",
+        text: "text-gray-700",
+        border: "border-gray-200",
+        icon: "•",
+      }
+    );
   };
 
   const stats = {
     total: allMemberships?.length || 0,
-    pending: allMemberships?.filter((m) => m.status === 'PENDING').length || 0,
-    approved: allMemberships?.filter((m) => m.status === 'APPROVED').length || 0,
-    rejected: allMemberships?.filter((m) => m.status === 'REJECTED').length || 0,
+    pending: allMemberships?.filter((m) => m.status === "PENDING").length || 0,
+    approved:
+      allMemberships?.filter((m) => m.status === "APPROVED").length || 0,
+    rejected:
+      allMemberships?.filter((m) => m.status === "REJECTED").length || 0,
   };
 
   if (isLoading) {
@@ -132,7 +151,9 @@ export default function Memberships() {
             <div className="w-16 h-16 border-4 border-slate-200 rounded-full"></div>
             <div className="w-16 h-16 border-4 border-[#0DE65A] border-t-transparent rounded-full animate-spin absolute top-0 left-0"></div>
           </div>
-          <div className="text-slate-600 font-medium">Loading memberships...</div>
+          <div className="text-slate-600 font-medium">
+            Loading memberships...
+          </div>
         </div>
       </div>
     );
@@ -146,13 +167,19 @@ export default function Memberships() {
             <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center text-2xl">
               ⚠️
             </div>
-            <div className="text-xl font-semibold text-slate-900">Connection Error</div>
+            <div className="text-xl font-semibold text-slate-900">
+              Connection Error
+            </div>
           </div>
           <div className="text-slate-600 mb-6">
-            {error instanceof Error ? error.message : 'Unable to load membership data'}
+            {error instanceof Error
+              ? error.message
+              : "Unable to load membership data"}
           </div>
           <div className="bg-slate-50 rounded-lg p-4 mb-6">
-            <div className="text-sm font-medium text-slate-700 mb-2">Please verify:</div>
+            <div className="text-sm font-medium text-slate-700 mb-2">
+              Please verify:
+            </div>
             <ul className="space-y-1 text-sm text-slate-600">
               <li className="flex items-center gap-2">
                 <span className="text-slate-400">•</span> API server is running
@@ -186,7 +213,9 @@ export default function Memberships() {
               <h1 className="text-3xl font-bold text-slate-900">
                 Membership Management
               </h1>
-              <p className="text-slate-500 mt-1">Manage and review membership applications</p>
+              <p className="text-slate-500 mt-1">
+                Manage and review membership applications
+              </p>
             </div>
             <div className="flex items-center gap-3">
               <div className="relative">
@@ -217,7 +246,7 @@ export default function Memberships() {
                 className="px-4 py-2.5 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-all duration-200 flex items-center gap-2 font-medium disabled:opacity-50"
               >
                 <svg
-                  className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`}
+                  className={`w-4 h-4 ${isLoading ? "animate-spin" : ""}`}
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -248,7 +277,9 @@ export default function Memberships() {
                 Total
               </div>
             </div>
-            <div className="text-3xl font-bold text-slate-900 mb-1">{stats.total}</div>
+            <div className="text-3xl font-bold text-slate-900 mb-1">
+              {stats.total}
+            </div>
             <div className="text-sm text-slate-500">All Members</div>
           </div>
 
@@ -261,7 +292,9 @@ export default function Memberships() {
                 Pending
               </div>
             </div>
-            <div className="text-3xl font-bold text-slate-900 mb-1">{stats.pending}</div>
+            <div className="text-3xl font-bold text-slate-900 mb-1">
+              {stats.pending}
+            </div>
             <div className="text-sm text-slate-500">Awaiting Review</div>
           </div>
 
@@ -274,7 +307,9 @@ export default function Memberships() {
                 Approved
               </div>
             </div>
-            <div className="text-3xl font-bold text-slate-900 mb-1">{stats.approved}</div>
+            <div className="text-3xl font-bold text-slate-900 mb-1">
+              {stats.approved}
+            </div>
             <div className="text-sm text-slate-500">Active Members</div>
           </div>
 
@@ -287,7 +322,9 @@ export default function Memberships() {
                 Rejected
               </div>
             </div>
-            <div className="text-3xl font-bold text-slate-900 mb-1">{stats.rejected}</div>
+            <div className="text-3xl font-bold text-slate-900 mb-1">
+              {stats.rejected}
+            </div>
             <div className="text-sm text-slate-500">Declined</div>
           </div>
         </div>
@@ -296,70 +333,78 @@ export default function Memberships() {
         <div className="mb-6">
           <div className="bg-white rounded-xl border border-slate-200 p-1.5 inline-flex gap-1 max-w-full overflow-x-auto">
             <button
-              onClick={() => setFilter('all')}
+              onClick={() => setFilter("all")}
               className={`px-6 py-2.5 rounded-lg text-sm font-semibold transition-all duration-200 ${
-                filter === 'all'
-                  ? 'bg-[#0DE65A] text-slate-900'
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                filter === "all"
+                  ? "bg-[#0DE65A] text-slate-900"
+                  : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
               }`}
             >
               All Members
-              <span className={`ml-2 px-2 py-0.5 rounded-full text-xs font-bold ${
-                filter === 'all' 
-                  ? 'bg-slate-900/10 text-slate-900' 
-                  : 'bg-slate-100 text-slate-600'
-              }`}>
+              <span
+                className={`ml-2 px-2 py-0.5 rounded-full text-xs font-bold ${
+                  filter === "all"
+                    ? "bg-slate-900/10 text-slate-900"
+                    : "bg-slate-100 text-slate-600"
+                }`}
+              >
                 {stats.total}
               </span>
             </button>
             <button
-              onClick={() => setFilter('pending')}
+              onClick={() => setFilter("pending")}
               className={`px-6 py-2.5 rounded-lg text-sm font-semibold transition-all duration-200 ${
-                filter === 'pending'
-                  ? 'bg-slate-900 text-white'
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                filter === "pending"
+                  ? "bg-slate-900 text-white"
+                  : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
               }`}
             >
               Pending
-              <span className={`ml-2 px-2 py-0.5 rounded-full text-xs font-bold ${
-                filter === 'pending' 
-                  ? 'bg-white/20 text-white' 
-                  : 'bg-slate-100 text-slate-600'
-              }`}>
+              <span
+                className={`ml-2 px-2 py-0.5 rounded-full text-xs font-bold ${
+                  filter === "pending"
+                    ? "bg-white/20 text-white"
+                    : "bg-slate-100 text-slate-600"
+                }`}
+              >
                 {stats.pending}
               </span>
             </button>
             <button
-              onClick={() => setFilter('approved')}
+              onClick={() => setFilter("approved")}
               className={`px-6 py-2.5 rounded-lg text-sm font-semibold transition-all duration-200 ${
-                filter === 'approved'
-                  ? 'bg-emerald-600 text-white'
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                filter === "approved"
+                  ? "bg-emerald-600 text-white"
+                  : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
               }`}
             >
               Approved
-              <span className={`ml-2 px-2 py-0.5 rounded-full text-xs font-bold ${
-                filter === 'approved' 
-                  ? 'bg-white/20 text-white' 
-                  : 'bg-slate-100 text-slate-600'
-              }`}>
+              <span
+                className={`ml-2 px-2 py-0.5 rounded-full text-xs font-bold ${
+                  filter === "approved"
+                    ? "bg-white/20 text-white"
+                    : "bg-slate-100 text-slate-600"
+                }`}
+              >
                 {stats.approved}
               </span>
             </button>
             <button
-              onClick={() => setFilter('rejected')}
+              onClick={() => setFilter("rejected")}
               className={`px-6 py-2.5 rounded-lg text-sm font-semibold transition-all duration-200 ${
-                filter === 'rejected'
-                  ? 'bg-rose-600 text-white'
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                filter === "rejected"
+                  ? "bg-rose-600 text-white"
+                  : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
               }`}
             >
               Rejected
-              <span className={`ml-2 px-2 py-0.5 rounded-full text-xs font-bold ${
-                filter === 'rejected' 
-                  ? 'bg-white/20 text-white' 
-                  : 'bg-slate-100 text-slate-600'
-              }`}>
+              <span
+                className={`ml-2 px-2 py-0.5 rounded-full text-xs font-bold ${
+                  filter === "rejected"
+                    ? "bg-white/20 text-white"
+                    : "bg-slate-100 text-slate-600"
+                }`}
+              >
                 {stats.rejected}
               </span>
             </button>
@@ -369,13 +414,18 @@ export default function Memberships() {
         {/* Filter Info */}
         <div className="mb-4 flex items-center gap-2">
           <div className="text-sm text-slate-600">
-            Showing <span className="font-semibold text-slate-900">{filteredMemberships?.length || 0}</span>{' '}
-            {filter !== 'all' && <span className="text-slate-500">({filter})</span>}{' '}
-            {filteredMemberships?.length === 1 ? 'member' : 'members'}
+            Showing{" "}
+            <span className="font-semibold text-slate-900">
+              {filteredMemberships?.length || 0}
+            </span>{" "}
+            {filter !== "all" && (
+              <span className="text-slate-500">({filter})</span>
+            )}{" "}
+            {filteredMemberships?.length === 1 ? "member" : "members"}
           </div>
           {searchQuery && (
             <button
-              onClick={() => setSearchQuery('')}
+              onClick={() => setSearchQuery("")}
               className="text-xs px-2 py-1 bg-slate-100 text-slate-600 rounded-md hover:bg-slate-200 transition-colors"
             >
               Clear search
@@ -389,6 +439,9 @@ export default function Memberships() {
             <table className="w-full">
               <thead className="bg-slate-50 border-b border-slate-200">
                 <tr>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                    Membership ID
+                  </th>
                   <th className="px-6 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
                     Member
                   </th>
@@ -418,6 +471,9 @@ export default function Memberships() {
                         key={member.id}
                         className="hover:bg-slate-50/50 transition-colors group"
                       >
+                        <td className="px-6 py-4 text-xs font-mono text-slate-700">
+                          {member.uniqueMemberId || "Pending"}
+                        </td>
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-3">
                             <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-700 font-semibold text-sm">
@@ -427,7 +483,9 @@ export default function Memberships() {
                               <div className="text-sm font-semibold text-slate-900">
                                 {member.fullName}
                               </div>
-                              <div className="text-xs text-slate-500">{member.occupation}</div>
+                              <div className="text-xs text-slate-500">
+                                {member.occupation}
+                              </div>
                               {member.bloodGroup && (
                                 <div className="inline-flex items-center gap-1 mt-1 px-2 py-0.5 bg-red-50 text-red-700 rounded text-xs font-medium">
                                   <span>🩸</span>
@@ -438,13 +496,31 @@ export default function Memberships() {
                           </div>
                         </td>
                         <td className="px-6 py-4">
-                          <div className="text-sm text-slate-900">{member.email}</div>
-                          <div className="text-sm text-slate-500">{member.phone}</div>
+                          <div className="text-sm text-slate-900">
+                            {member.email}
+                          </div>
+                          <div className="text-sm text-slate-500">
+                            {member.phone}
+                          </div>
+                          <div className="flex items-center gap-2 text-xs mt-1">
+                            {member.emailVerified && (
+                              <span className="px-2 py-0.5 bg-emerald-50 text-emerald-700 rounded">
+                                Email Verified
+                              </span>
+                            )}
+                            {member.phoneVerified && (
+                              <span className="px-2 py-0.5 bg-blue-50 text-blue-700 rounded">
+                                Phone Verified
+                              </span>
+                            )}
+                          </div>
                         </td>
                         <td className="px-6 py-4">
-                          <div className="text-sm font-medium text-slate-900">{member.zone}</div>
+                          <div className="text-sm font-medium text-slate-900">
+                            {member.city}
+                          </div>
                           <div className="text-xs text-slate-500">
-                            {member.district}, {member.state}
+                            {member.state}, {member.country}
                           </div>
                         </td>
                         <td className="px-6 py-4">
@@ -454,18 +530,22 @@ export default function Memberships() {
                             <span>{statusConfig.icon}</span>
                             {member.status}
                           </span>
-                          {member.status === 'REJECTED' && member.rejectionReason && (
-                            <div className="text-xs text-rose-600 mt-2 max-w-xs line-clamp-2">
-                              {member.rejectionReason}
-                            </div>
-                          )}
+                          {member.status === "REJECTED" &&
+                            member.rejectionReason && (
+                              <div className="text-xs text-rose-600 mt-2 max-w-xs line-clamp-2">
+                                {member.rejectionReason}
+                              </div>
+                            )}
                         </td>
                         <td className="px-6 py-4 text-sm text-slate-600 whitespace-nowrap">
-                          {new Date(member.createdAt).toLocaleDateString('en-GB', {
-                            day: '2-digit',
-                            month: 'short',
-                            year: 'numeric',
-                          })}
+                          {new Date(member.createdAt).toLocaleDateString(
+                            "en-GB",
+                            {
+                              day: "2-digit",
+                              month: "short",
+                              year: "numeric",
+                            },
+                          )}
                         </td>
                         <td className="px-6 py-4">
                           <div className="flex items-center justify-end gap-2">
@@ -475,7 +555,18 @@ export default function Memberships() {
                             >
                               View
                             </button>
-                            {member.status === 'PENDING' && (
+
+                            {member.status === "APPROVED" && (
+                              <button
+                                onClick={() =>
+                                  suspendMutation.mutate(member.id)
+                                }
+                                className="px-3 py-1.5 text-sm font-medium bg-amber-50 text-amber-700 rounded-lg hover:bg-amber-100 transition-colors"
+                              >
+                                Suspend
+                              </button>
+                            )}
+                            {member.status === "PENDING" && (
                               <>
                                 <button
                                   onClick={() => handleApprove(member.id)}
@@ -503,18 +594,20 @@ export default function Memberships() {
                     <td colSpan={6} className="px-6 py-16 text-center">
                       <div className="flex flex-col items-center gap-4">
                         <div className="w-20 h-20 rounded-full bg-slate-100 flex items-center justify-center text-4xl">
-                          {searchQuery ? '🔍' : '👥'}
+                          {searchQuery ? "🔍" : "👥"}
                         </div>
                         <div>
                           <div className="text-slate-900 text-lg font-semibold mb-1">
-                            {searchQuery ? 'No results found' : 'No members found'}
+                            {searchQuery
+                              ? "No results found"
+                              : "No members found"}
                           </div>
                           <div className="text-slate-500 text-sm">
                             {searchQuery
-                              ? 'Try adjusting your search terms'
-                              : filter !== 'all'
-                              ? `No ${filter} memberships at the moment`
-                              : 'No membership applications yet'}
+                              ? "Try adjusting your search terms"
+                              : filter !== "all"
+                                ? `No ${filter} memberships at the moment`
+                                : "No membership applications yet"}
                           </div>
                         </div>
                       </div>
@@ -539,16 +632,30 @@ export default function Memberships() {
                     {selectedMember.fullName.charAt(0).toUpperCase()}
                   </div>
                   <div>
-                    <h2 className="text-2xl font-bold">{selectedMember.fullName}</h2>
-                    <p className="text-slate-300 text-sm">{selectedMember.occupation}</p>
+                    <h2 className="text-2xl font-bold">
+                      {selectedMember.fullName}
+                    </h2>
+                    <p className="text-slate-300 text-sm">
+                      {selectedMember.occupation}
+                    </p>
                   </div>
                 </div>
                 <button
                   onClick={() => setSelectedMember(null)}
                   className="w-10 h-10 rounded-full hover:bg-white/10 flex items-center justify-center transition-colors text-white"
                 >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  <svg
+                    className="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
                   </svg>
                 </button>
               </div>
@@ -562,29 +669,38 @@ export default function Memberships() {
                   <h3 className="text-sm font-semibold text-slate-900 uppercase tracking-wider mb-4">
                     Personal Details
                   </h3>
-                  
+
                   <div>
-                    <label className="text-xs font-medium text-slate-500 uppercase tracking-wider">Date of Birth</label>
+                    <label className="text-xs font-medium text-slate-500 uppercase tracking-wider">
+                      Date of Birth
+                    </label>
                     <p className="text-slate-900 font-medium mt-1">
-                      {new Date(selectedMember.dob).toLocaleDateString('en-GB', {
-                        day: 'numeric',
-                        month: 'long',
-                        year: 'numeric',
-                      })}
+                      {new Date(selectedMember.dob).toLocaleDateString(
+                        "en-GB",
+                        {
+                          day: "numeric",
+                          month: "long",
+                          year: "numeric",
+                        },
+                      )}
                     </p>
                   </div>
 
                   <div>
-                    <label className="text-xs font-medium text-slate-500 uppercase tracking-wider">Blood Group</label>
+                    <label className="text-xs font-medium text-slate-500 uppercase tracking-wider">
+                      Blood Group
+                    </label>
                     <p className="text-slate-900 font-medium mt-1">
-                      {selectedMember.bloodGroup || 'Not specified'}
+                      {selectedMember.bloodGroup || "Not specified"}
                     </p>
                   </div>
 
                   <div>
-                    <label className="text-xs font-medium text-slate-500 uppercase tracking-wider">Aadhar Number</label>
+                    <label className="text-xs font-medium text-slate-500 uppercase tracking-wider">
+                      Aadhar Number
+                    </label>
                     <p className="text-slate-900 font-medium mt-1 font-mono">
-                      {selectedMember.aadharNumber}
+                      {selectedMember.aadhaarNumber}
                     </p>
                   </div>
                 </div>
@@ -594,24 +710,36 @@ export default function Memberships() {
                   <h3 className="text-sm font-semibold text-slate-900 uppercase tracking-wider mb-4">
                     Contact Details
                   </h3>
-                  
+
                   <div>
-                    <label className="text-xs font-medium text-slate-500 uppercase tracking-wider">Email Address</label>
-                    <p className="text-slate-900 font-medium mt-1 break-all">{selectedMember.email}</p>
+                    <label className="text-xs font-medium text-slate-500 uppercase tracking-wider">
+                      Email Address
+                    </label>
+                    <p className="text-slate-900 font-medium mt-1 break-all">
+                      {selectedMember.email}
+                    </p>
                   </div>
 
                   <div>
-                    <label className="text-xs font-medium text-slate-500 uppercase tracking-wider">Phone Number</label>
-                    <p className="text-slate-900 font-medium mt-1">{selectedMember.phone}</p>
+                    <label className="text-xs font-medium text-slate-500 uppercase tracking-wider">
+                      Phone Number
+                    </label>
+                    <p className="text-slate-900 font-medium mt-1">
+                      {selectedMember.phone}
+                    </p>
                   </div>
 
                   <div>
-                    <label className="text-xs font-medium text-slate-500 uppercase tracking-wider">Status</label>
+                    <label className="text-xs font-medium text-slate-500 uppercase tracking-wider">
+                      Status
+                    </label>
                     <div className="mt-2">
                       {(() => {
                         const config = getStatusConfig(selectedMember.status);
                         return (
-                          <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-full border ${config.bg} ${config.text} ${config.border}`}>
+                          <span
+                            className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-full border ${config.bg} ${config.text} ${config.border}`}
+                          >
                             <span>{config.icon}</span>
                             {selectedMember.status}
                           </span>
@@ -626,60 +754,74 @@ export default function Memberships() {
                   <h3 className="text-sm font-semibold text-slate-900 uppercase tracking-wider mb-4">
                     Address Information
                   </h3>
-                  
+
                   <div className="mb-4">
-                    <label className="text-xs font-medium text-slate-500 uppercase tracking-wider">Full Address</label>
-                    <p className="text-slate-900 font-medium mt-1">{selectedMember.address}</p>
+                    <label className="text-xs font-medium text-slate-500 uppercase tracking-wider">
+                      Full Address
+                    </label>
+
+                    <p className="text-slate-900 font-medium mt-1">
+                      {[
+                        selectedMember.city,
+                        selectedMember.state,
+                        selectedMember.country,
+                      ]
+                        .filter(Boolean)
+                        .join(", ")}
+                    </p>
                   </div>
 
                   <div className="grid grid-cols-3 gap-4">
                     <div>
-                      <label className="text-xs font-medium text-slate-500 uppercase tracking-wider">Zone</label>
-                      <p className="text-slate-900 font-medium mt-1">{selectedMember.zone}</p>
+                      <label className="text-xs font-medium text-slate-500 uppercase tracking-wider">
+                        City
+                      </label>
+                      <p className="text-slate-900 font-medium mt-1">
+                        {selectedMember.city || "Not specified"}
+                      </p>
                     </div>
+
                     <div>
-                      <label className="text-xs font-medium text-slate-500 uppercase tracking-wider">District</label>
-                      <p className="text-slate-900 font-medium mt-1">{selectedMember.district}</p>
-                    </div>
-                    <div>
-                      <label className="text-xs font-medium text-slate-500 uppercase tracking-wider">State</label>
-                      <p className="text-slate-900 font-medium mt-1">{selectedMember.state}</p>
+                      <label className="text-xs font-medium text-slate-500 uppercase tracking-wider">
+                        State
+                      </label>
+                      <p className="text-slate-900 font-medium mt-1">
+                        {selectedMember.state || "Not specified"}
+                      </p>
                     </div>
                   </div>
                 </div>
 
                 {/* Social Media */}
-                {(selectedMember.instagramId || selectedMember.xTwitterId) && (
+                {selectedMember.socialHandle && (
                   <div className="md:col-span-2 bg-slate-50 rounded-xl p-5">
                     <h3 className="text-sm font-semibold text-slate-900 uppercase tracking-wider mb-4">
                       Social Media
                     </h3>
-                    <div className="grid grid-cols-2 gap-4">
-                      {selectedMember.instagramId && (
-                        <div>
-                          <label className="text-xs font-medium text-slate-500 uppercase tracking-wider">Instagram</label>
-                          <p className="text-slate-900 font-medium mt-1">@{selectedMember.instagramId}</p>
-                        </div>
-                      )}
-                      {selectedMember.xTwitterId && (
-                        <div>
-                          <label className="text-xs font-medium text-slate-500 uppercase tracking-wider">X (Twitter)</label>
-                          <p className="text-slate-900 font-medium mt-1">@{selectedMember.xTwitterId}</p>
-                        </div>
-                      )}
+
+                    <div>
+                      <label className="text-xs font-medium text-slate-500 uppercase tracking-wider">
+                        Handle
+                      </label>
+                      <p className="text-slate-900 font-medium mt-1">
+                        {selectedMember.socialHandle}
+                      </p>
                     </div>
                   </div>
                 )}
 
                 {/* Rejection Reason */}
-                {selectedMember.status === 'REJECTED' && selectedMember.rejectionReason && (
-                  <div className="md:col-span-2 bg-rose-50 border border-rose-200 rounded-xl p-5">
-                    <h3 className="text-sm font-semibold text-rose-900 uppercase tracking-wider mb-2">
-                      Rejection Reason
-                    </h3>
-                    <p className="text-rose-900">{selectedMember.rejectionReason}</p>
-                  </div>
-                )}
+                {selectedMember.status === "REJECTED" &&
+                  selectedMember.rejectionReason && (
+                    <div className="md:col-span-2 bg-rose-50 border border-rose-200 rounded-xl p-5">
+                      <h3 className="text-sm font-semibold text-rose-900 uppercase tracking-wider mb-2">
+                        Rejection Reason
+                      </h3>
+                      <p className="text-rose-900">
+                        {selectedMember.rejectionReason}
+                      </p>
+                    </div>
+                  )}
 
                 {/* Timeline */}
                 <div className="md:col-span-2 bg-slate-50 rounded-xl p-5">
@@ -688,27 +830,36 @@ export default function Memberships() {
                   </h3>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="text-xs font-medium text-slate-500 uppercase tracking-wider">Applied On</label>
+                      <label className="text-xs font-medium text-slate-500 uppercase tracking-wider">
+                        Applied On
+                      </label>
                       <p className="text-slate-900 font-medium mt-1">
-                        {new Date(selectedMember.createdAt).toLocaleDateString('en-GB', {
-                          day: 'numeric',
-                          month: 'long',
-                          year: 'numeric',
-                          hour: '2-digit',
-                          minute: '2-digit',
-                        })}
+                        {new Date(selectedMember.createdAt).toLocaleDateString(
+                          "en-GB",
+                          {
+                            day: "numeric",
+                            month: "long",
+                            year: "numeric",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          },
+                        )}
                       </p>
                     </div>
                     {selectedMember.reviewedAt && (
                       <div>
-                        <label className="text-xs font-medium text-slate-500 uppercase tracking-wider">Reviewed On</label>
+                        <label className="text-xs font-medium text-slate-500 uppercase tracking-wider">
+                          Reviewed On
+                        </label>
                         <p className="text-slate-900 font-medium mt-1">
-                          {new Date(selectedMember.reviewedAt).toLocaleDateString('en-GB', {
-                            day: 'numeric',
-                            month: 'long',
-                            year: 'numeric',
-                            hour: '2-digit',
-                            minute: '2-digit',
+                          {new Date(
+                            selectedMember.reviewedAt,
+                          ).toLocaleDateString("en-GB", {
+                            day: "numeric",
+                            month: "long",
+                            year: "numeric",
+                            hour: "2-digit",
+                            minute: "2-digit",
                           })}
                         </p>
                       </div>
@@ -719,7 +870,7 @@ export default function Memberships() {
             </div>
 
             {/* Modal Footer */}
-            {selectedMember.status === 'PENDING' && (
+            {selectedMember.status === "PENDING" && (
               <div className="bg-slate-50 px-8 py-6 border-t border-slate-200 flex gap-3">
                 <button
                   onClick={() => handleApprove(selectedMember.id)}
@@ -728,16 +879,41 @@ export default function Memberships() {
                 >
                   {approveMutation.isPending ? (
                     <>
-                      <svg className="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                      <svg
+                        className="animate-spin h-5 w-5"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        />
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        />
                       </svg>
                       Approving...
                     </>
                   ) : (
                     <>
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      <svg
+                        className="w-5 h-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M5 13l4 4L19 7"
+                        />
                       </svg>
                       Approve Membership
                     </>
@@ -748,8 +924,18 @@ export default function Memberships() {
                   disabled={rejectMutation.isPending}
                   className="flex-1 px-6 py-3 bg-rose-600 text-white rounded-lg hover:bg-rose-700 transition-all duration-200 font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  <svg
+                    className="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
                   </svg>
                   Reject Membership
                 </button>
@@ -771,7 +957,11 @@ export default function Memberships() {
                 Reject Membership
               </h3>
               <p className="text-slate-600 text-center mb-6">
-                Please provide a reason for rejecting <span className="font-semibold">{selectedMember.fullName}&apos;s</span> membership application
+                Please provide a reason for rejecting{" "}
+                <span className="font-semibold">
+                  {selectedMember.fullName}&apos;s
+                </span>{" "}
+                membership application
               </p>
               <textarea
                 value={rejectionReason}
@@ -788,7 +978,7 @@ export default function Memberships() {
                 <button
                   onClick={() => {
                     setShowRejectModal(false);
-                    setRejectionReason('');
+                    setRejectionReason("");
                   }}
                   className="flex-1 px-6 py-3 border-2 border-slate-200 text-slate-700 rounded-xl hover:bg-slate-50 transition-all duration-200 font-semibold"
                 >
@@ -801,14 +991,29 @@ export default function Memberships() {
                 >
                   {rejectMutation.isPending ? (
                     <>
-                      <svg className="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                      <svg
+                        className="animate-spin h-5 w-5"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        />
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        />
                       </svg>
                       Rejecting...
                     </>
                   ) : (
-                    'Confirm Rejection'
+                    "Confirm Rejection"
                   )}
                 </button>
               </div>

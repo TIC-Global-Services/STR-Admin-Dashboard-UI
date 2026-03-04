@@ -45,6 +45,7 @@ export interface MembershipAnalytics {
     pending: number;
     approved: number;
     rejected: number;
+    suspended: number;
   };
   trends: {
     today: number;
@@ -59,10 +60,8 @@ export interface MembershipAnalytics {
 
 export interface MembershipDimensions {
   state: Array<{ label: string; count: number }>;
-  district: Array<{ label: string; count: number }>;
-  zone: Array<{ label: string; count: number }>;
-  bloodGroup: Array<{ label: string; count: number }>;
-  occupation: Array<{ label: string; count: number }>;
+  city: Array<{ label: string; count: number }>;
+  country: Array<{ label: string; count: number }>;
 }
 
 export interface UserAnalytics {
@@ -117,7 +116,7 @@ export const analyticsApi = {
       return data;
     } catch {
       return {
-        summary: { total: 0, pending: 0, approved: 0, rejected: 0 },
+        summary: { total: 0, pending: 0, approved: 0, rejected: 0, suspended: 0 },
         trends: { today: 0, last7Days: 0, last30Days: 0 },
         daily: [],
       };
@@ -132,10 +131,8 @@ export const analyticsApi = {
     } catch {
       return {
         state: [],
-        district: [],
-        zone: [],
-        bloodGroup: [],
-        occupation: [],
+        city: [],
+        country: [],
       };
     }
   },
