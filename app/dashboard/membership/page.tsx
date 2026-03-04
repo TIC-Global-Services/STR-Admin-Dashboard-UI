@@ -72,12 +72,19 @@ export default function Memberships() {
     },
   });
 
+  const reactivateMutation = useMutation({
+    mutationFn: membershipApi.reactivate,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["memberships"] });
+    },
+  });
+
   const suspendMutation = useMutation({
-  mutationFn: (id: string) => membershipApi.suspend(id),
-  onSuccess: () => {
-    queryClient.invalidateQueries({ queryKey: ["memberships"] });
-  },
-});
+    mutationFn: (id: string) => membershipApi.suspend(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["memberships"] });
+    },
+  });
 
   const handleApprove = (id: string) => {
     approveMutation.mutate(id);
@@ -564,6 +571,17 @@ export default function Memberships() {
                                 className="px-3 py-1.5 text-sm font-medium bg-amber-50 text-amber-700 rounded-lg hover:bg-amber-100 transition-colors"
                               >
                                 Suspend
+                              </button>
+                            )}
+
+                            {member.status === "SUSPENDED" && (
+                              <button
+                                onClick={() =>
+                                  reactivateMutation.mutate(member.id)
+                                }
+                                className="px-3 py-1.5 text-sm font-medium bg-green-50 text-green-700 rounded-lg hover:bg-green-100 transition-colors"
+                              >
+                                Reactivate
                               </button>
                             )}
                             {member.status === "PENDING" && (

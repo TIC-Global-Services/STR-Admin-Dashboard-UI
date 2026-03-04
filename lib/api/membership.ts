@@ -141,4 +141,11 @@ export const membershipApi = {
     });
     return data;
   },
+
+  reactivate: async (id: string): Promise<Membership> => {
+    const { data } = await apiClient.post(
+      `/admin/memberships/${id}/reactivate`,
+    );
+    return data;
+  },
 };
